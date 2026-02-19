@@ -10,4 +10,21 @@ A high-performance, dark-themed DSA problem-solving tracker with hand-picked Lee
 - **Local Storage**: Your progress is saved automatically in your browser's local storage.
 
 ## How to Run
-Simply open `dsa-leetcode-tracker.html` in any modern web browser or use a local server (like VS Code Live Server).
+
+### Option 1: Direct Open (Easiest)
+Simply open the `index.html` file in any modern web browser (Chrome, Firefox, Edge, etc.). 
+*Note: The application is optimized to work locally using `data.js` to avoid CORS issues.*
+
+### Option 2: Local Server (Recommended)
+If you're doing development, run a local server:
+```bash
+npx serve .
+# or
+python3 -m http.server 8000
+```
+
+## Features (Enhanced)
+- **Glassmorphism UI**: Modern aesthetic with a Light/Dark mode toggle (🌓).
+- **Import/Export**: Save and restore your progress via JSON files (📥/📤).
+- **Problem Notes**: Click the 📝 icon to add persistence notes to any problem.
+- **Confetti Rewards**: Celebrate topic completion with visual effects.
