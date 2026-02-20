@@ -1140,3 +1140,50 @@ header {
   font-size: 13px;
   line-height: 1.6;
 }
+
+/* LEADERBOARD STYLES */
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.leader-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--surface2);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  transition: transform 0.2s;
+}
+
+.leader-item:hover {
+  transform: translateX(5px);
+  border-color: var(--orange);
+}
+
+.leader-rank {
+  font-weight: 800;
+  width: 30px;
+  color: var(--orange);
+}
+
+.leader-name {
+  flex: 1;
+  font-weight: 600;
+  margin-left: 10px;
+}
+
+.leader-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.leader-item.me {
+  border: 2px solid var(--orange);
+  background: rgba(249, 115, 22, 0.05);
+}

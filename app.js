@@ -829,3 +829,48 @@ function insertCodeSnippet(pid) {
   updateNote(pid, textarea.value);
 }
 
+
+async function toggleLeaderboard() {
+  const overlay = document.getElementById('leaderboard-overlay');
+  overlay.classList.toggle('hidden');
+  if (!overlay.classList.contains('hidden')) {
+    fetchLeaderboard();
+  }
+}
+
+async function fetchLeaderboard() {
+  const list = document.getElementById('leaderboard-list');
+  const client = getSupabase();
+  if (!client) {
+    list.innerHTML = '<p style="padding:20px; text-align:center;">Connect to cloud to see rankings.</p>';
+    return;
+  }
+
+  try {
+    const { data, error } = await client
+      .from('user_data')
+      .select('username, done_data')
+      .order('updated_at', { ascending: false }) // Just for now, we'll sort by count in JS
+      .limit(50);
+
+    if (error) throw error;
+
+    // Process and sort by solved count
+    const rankings = data.map(u => ({
+      name: u.username ? u.username.split('@')[0] : 'Anonymous',
+      solved: Object.keys(u.done_data || {}).length,
+      isMe: u.username === currentUser
+    })).sort((a,b) => b.solved - a.solved).slice(0, 10);
+
+    list.innerHTML = rankings.map((u, i) => `
+      <div class="leader-item ${u.isMe ? 'me' : ''}">
+        <div class="leader-rank">#${i+1}</div>
+        <div class="leader-name">${u.name} ${u.isMe ? ' (You)' : ''}</div>
+        <div class="leader-score">${u.solved} solved</div>
+      </div>
+    `).join('');
+
+  } catch (e) {
+    list.innerHTML = '<p style="padding:20px; text-align:center; color:var(--red)">Failed to load rankings.</p>';
+  }
+}
