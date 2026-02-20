@@ -5,54 +5,152 @@ let done = {};
 let notes = {};
 let filterMode = 'all';
 
-function initApp() {
+let isSignUpMode = false;
+let isCloudEnabled = false;
+
+async function initApp() {
   const overlay = document.getElementById('login-overlay');
-  const loginBtn = document.getElementById('login-btn');
+  const authBtn = document.getElementById('auth-btn');
+  const toggleLink = document.getElementById('toggle-auth-mode');
   const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+
+  // Check if Supabase is configured
+  isCloudEnabled = supabaseClient && SUPABASE_URL !== 'https://your-project-url.supabase.co';
 
   if (!currentUser) {
     overlay.classList.remove('hidden');
-    loginBtn.onclick = () => {
-      const user = usernameInput.value.trim();
-      const pass = document.getElementById('password').value.trim();
 
-      if (user === 'Naveen' && pass === '4421') {
-        currentUser = user;
-        localStorage.setItem('dsa_user', user);
-        overlay.classList.add('hidden');
-        document.getElementById('user-name-tag').textContent = currentUser;
-        loadUserData();
-        initTheme();
-        renderTopics();
+    if (isCloudEnabled) {
+      document.querySelector('.input-group label[for="username"]').textContent = "Email";
+      usernameInput.placeholder = "Enter your email";
+    }
+
+    toggleLink.onclick = (e) => {
+      e.preventDefault();
+      isSignUpMode = !isSignUpMode;
+      authBtn.textContent = isSignUpMode ? 'Create Account' : 'Login';
+      toggleLink.innerHTML = isSignUpMode ? 'Login' : 'Sign Up';
+      document.querySelector('.login-toggle-text').innerHTML = isSignUpMode
+        ? `Already have an account? <a href="#" id="toggle-auth-mode">Login</a>`
+        : `Don't have an account? <a href="#" id="toggle-auth-mode">Sign Up</a>`;
+      // Re-bind toggle click since we replaced innerHTML
+      const newToggle = document.getElementById('toggle-auth-mode');
+      if (newToggle) newToggle.onclick = toggleLink.onclick;
+    };
+
+    authBtn.onclick = async () => {
+      const userIdent = usernameInput.value.trim();
+      const pass = passwordInput.value.trim();
+
+      if (!userIdent || !pass) {
+        alert('Please fill in both fields.');
+        return;
+      }
+
+      if (isCloudEnabled) {
+        authBtn.disabled = true;
+        authBtn.textContent = "Processing...";
+        try {
+          if (isSignUpMode) {
+            const { data, error } = await supabaseClient.auth.signUp({
+              email: userIdent,
+              password: pass
+            });
+            if (error) throw error;
+
+            if (data.user && data.session) {
+              // Log and redirect if Auto-Confirm is ON
+              loginUser(data.user.email, data.user.id);
+            } else {
+              alert('Sign up successful! Please check your email for a confirmation link to activate your account.');
+              isSignUpMode = false;
+              authBtn.textContent = "Login";
+              toggleLink.click(); // Switch back to login view
+            }
+          } else {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+              email: userIdent,
+              password: pass
+            });
+            if (error) throw error;
+            loginUser(data.user.email, data.user.id);
+          }
+        } catch (err) {
+          console.error("Auth Error:", err);
+          alert('Error: ' + err.message);
+        } finally {
+          authBtn.disabled = false;
+          authBtn.textContent = isSignUpMode ? 'Create Account' : 'Login';
+        }
       } else {
-        alert('Invalid Username or Password. Please try again.');
+        // Local Auth Fallback
+        let users = JSON.parse(localStorage.getItem('dsa_users') || '{}');
+        if (Object.keys(users).length === 0 && !localStorage.getItem('dsa_users')) {
+          users['Naveen'] = '4421';
+          localStorage.setItem('dsa_users', JSON.stringify(users));
+        }
+
+        if (isSignUpMode) {
+          if (users[userIdent]) {
+            alert('Username already exists. Please login.');
+          } else {
+            users[userIdent] = pass;
+            localStorage.setItem('dsa_users', JSON.stringify(users));
+            loginUser(userIdent);
+          }
+        } else {
+          if (users[userIdent] && users[userIdent] === pass) {
+            loginUser(userIdent);
+          } else {
+            alert('Invalid Username or Password.');
+          }
+        }
       }
     };
   } else {
-    overlay.classList.add('hidden');
-    document.getElementById('user-name-tag').textContent = currentUser;
-    loadUserData();
-    initTheme();
-    renderTopics();
+    finishInit();
   }
 }
 
-function loadUserData() {
+function loginUser(user, cloudId = null) {
+  currentUser = user;
+  localStorage.setItem('dsa_user', user);
+  if (cloudId) localStorage.setItem('dsa_cloud_id', cloudId);
+  document.getElementById('login-overlay').classList.add('hidden');
+  finishInit();
+}
+
+function finishInit() {
+  document.getElementById('user-name-tag').textContent = currentUser.split('@')[0];
+  loadUserData().then(() => {
+    initTheme();
+    renderTopics();
+  });
+}
+
+async function loadUserData() {
+  if (isCloudEnabled && localStorage.getItem('dsa_cloud_id')) {
+    const cloudId = localStorage.getItem('dsa_cloud_id');
+    try {
+      const { data, error } = await supabaseClient.from('user_data').select('*').eq('id', cloudId).single();
+      if (data) {
+        done = data.done_data || {};
+        notes = data.notes_data || {};
+        // Sync to local as backup
+        saveDone(true);
+        saveNotes(true);
+        return;
+      }
+    } catch (e) {
+      console.warn("Cloud Load Failed, falling back to local:", e);
+    }
+  }
+
+  // Fallback to local
   const userPrefix = currentUser ? `${currentUser}_` : '';
   done = JSON.parse(localStorage.getItem(`${userPrefix}dsa_done`) || '{}');
   notes = JSON.parse(localStorage.getItem(`${userPrefix}dsa_notes`) || '{}');
-
-  // Migrate old data if this is the first time using the user-prefixed storage
-  if (Object.keys(done).length === 0 && !localStorage.getItem(`${userPrefix}dsa_done`)) {
-    const oldDone = JSON.parse(localStorage.getItem('dsa_done') || '{}');
-    const oldNotes = JSON.parse(localStorage.getItem('dsa_notes') || '{}');
-    if (Object.keys(oldDone).length > 0) {
-      done = oldDone;
-      notes = oldNotes;
-      saveDone();
-      saveNotes();
-    }
-  }
 
   // Migrate old true values to timestamp
   Object.keys(done).forEach(key => {
@@ -60,14 +158,38 @@ function loadUserData() {
   });
 }
 
-function saveDone() {
+function saveDone(localOnly = false) {
   const userPrefix = currentUser ? `${currentUser}_` : '';
   localStorage.setItem(`${userPrefix}dsa_done`, JSON.stringify(done));
+  if (!localOnly && isCloudEnabled) syncToCloud();
 }
 
-function saveNotes() {
+function saveNotes(localOnly = false) {
   const userPrefix = currentUser ? `${currentUser}_` : '';
   localStorage.setItem(`${userPrefix}dsa_notes`, JSON.stringify(notes));
+  if (!localOnly && isCloudEnabled) syncToCloud();
+}
+
+let syncTimeout;
+function syncToCloud() {
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(async () => {
+    const cloudId = localStorage.getItem('dsa_cloud_id');
+    if (!cloudId) return;
+
+    try {
+      const { error } = await supabaseClient.from('user_data').upsert({
+        id: cloudId,
+        username: currentUser,
+        done_data: done,
+        notes_data: notes,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+      if (error) console.error("Cloud Sync Error:", error);
+    } catch (e) {
+      console.error("Sync Failed:", e);
+    }
+  }, 2000); // Debounce sync
 }
 
 function logout() {

@@ -10,6 +10,7 @@
     rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -20,7 +21,7 @@
         <h1>DSA Tracker</h1>
         <p>Master your coding journey</p>
       </div>
-      <div class="login-form">
+      <div class="login-form" id="login-form">
         <div class="input-group">
           <label for="username">User Name</label>
           <input type="text" id="username" placeholder="Enter your name" autocomplete="off">
@@ -29,7 +30,10 @@
           <label for="password">Password</label>
           <input type="password" id="password" placeholder="••••••••">
         </div>
-        <button id="login-btn" class="login-primary-btn">Initialize Session</button>
+        <button id="auth-btn" class="login-primary-btn">Login</button>
+        <p class="login-toggle-text">
+          Don't have an account? <a href="#" id="toggle-auth-mode">Sign Up</a>
+        </p>
         <p class="login-footer">Data is stored locally in your browser.</p>
       </div>
     </div>
@@ -122,6 +126,7 @@
   </div>
 
   <script src="data.js"></script>
+  <script src="supabase-config.js"></script>
   <script src="app.js"></script>
 </body>
 

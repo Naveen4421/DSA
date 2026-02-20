@@ -171,11 +171,30 @@
   filter: brightness(1.1);
 }
 
+.login-toggle-text {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.login-toggle-text a {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.login-toggle-text a:hover {
+  color: #3a8dff;
+  text-decoration: underline;
+}
+
 .login-footer {
   text-align: center;
   color: var(--muted);
-  font-size: 12px;
-  margin-top: 24px;
+  font-size: 11px;
+  margin-top: 14px;
 }
 
 body {
