@@ -28,9 +28,9 @@ async function initApp() {
     errorDiv.style.color = 'var(--green)';
   };
 
-  // Check if Supabase is configured
   const client = getSupabase();
-  isCloudEnabled = client && SUPABASE_URL && !SUPABASE_URL.includes('your-project-url');
+  // DETECTION: Supabase keys must be long JWT strings starting with 'eyJ'
+  isCloudEnabled = client && SUPABASE_URL && SUPABASE_ANON_KEY.startsWith('eyJ');
 
   if (isCloudEnabled) {
     // 1. Listen for auth changes (like after clicking email link)
@@ -52,13 +52,17 @@ async function initApp() {
   if (!currentUser) {
     overlay.classList.remove('hidden');
 
-    // Show Mode to user
-    const modeLabel = document.createElement('div');
-    modeLabel.id = "auth-mode-label";
-    modeLabel.style = "font-size: 10px; color: var(--muted); text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;";
-    modeLabel.textContent = isCloudEnabled ? "🌐 Cloud Sync Active" : "💻 Local Storage Only";
-    if (!document.getElementById('auth-mode-label')) {
-      document.querySelector('.login-header').appendChild(modeLabel);
+    // Status Indicator
+    if (!document.getElementById('cloud-status')) {
+      const statusDiv = document.createElement('div');
+      statusDiv.id = 'cloud-status';
+      statusDiv.style = "font-size: 11px; text-align: center; margin-bottom: 20px; font-weight: 600;";
+      if (isCloudEnabled) {
+        statusDiv.innerHTML = '<span style="color:var(--green)">●</span> Cloud Database Connected';
+      } else {
+        statusDiv.innerHTML = '<span style="color:var(--red)">●</span> Invalid API Key (Local Mode Only)';
+      }
+      document.querySelector('.login-header').appendChild(statusDiv);
     }
 
     if (isCloudEnabled) {
@@ -134,7 +138,22 @@ async function initApp() {
         authBtn.disabled = false;
         authBtn.textContent = originalText;
       }
-    };
+    }
+
+    // Bypass Local Option
+    if (isCloudEnabled && !document.getElementById('bypass-link')) {
+      const bypass = document.createElement('div');
+      bypass.style = "text-align:center; margin-top:15px;";
+      bypass.innerHTML = `<a href="#" id="bypass-link" style="color:var(--muted); font-size:12px; text-decoration:underline;">Use Local Storage Instead</a>`;
+      document.querySelector('.login-form').appendChild(bypass);
+      document.getElementById('bypass-link').onclick = (e) => {
+        e.preventDefault();
+        isCloudEnabled = false;
+        document.getElementById('cloud-status').innerHTML = '<span style="color:var(--yellow)">●</span> Static Local Mode Active';
+        document.querySelector('.input-group label[for="username"]').textContent = "User Name";
+        usernameInput.placeholder = "Enter your name";
+      };
+    }
   } else {
     finishInit();
   }
