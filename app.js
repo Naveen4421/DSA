@@ -238,9 +238,14 @@ function syncToCloud() {
   }, 2000); // Debounce sync
 }
 
-function logout() {
-  if (confirm('Are you sure you want to logout? your progress is saved locally.')) {
+async function logout() {
+  if (confirm('Are you sure you want to logout?')) {
+    const client = getSupabase();
+    if (client) {
+      await client.auth.signOut();
+    }
     localStorage.removeItem('dsa_user');
+    localStorage.removeItem('dsa_cloud_id');
     location.reload();
   }
 }
