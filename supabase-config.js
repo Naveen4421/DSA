@@ -1,5 +1,5 @@
 const SUPABASE_URL = 'https://wwpurmviubmukjelccmb.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_5cbe3YP3AN_YB5Zo1bpjVQ_CkCEuhdI';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3cHVybXZpdWJtdWtqZWxjY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NzQ5NTcsImV4cCI6MjA4NzE1MDk1N30.metnARFBzAPkd9PmtU2nbbr2ToNUXBtAmntG-_SkOlM';
 
 let supabaseClient = null;
 
