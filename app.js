@@ -33,19 +33,21 @@ async function initApp() {
   isCloudEnabled = client && SUPABASE_URL && SUPABASE_ANON_KEY.startsWith('eyJ');
 
   if (isCloudEnabled) {
-    // 1. Listen for auth changes (like after clicking email link)
-    client.auth.onAuthStateChange((event, session) => {
-      console.log("Auth Event:", event);
+    try {
+      // 1. Listen for auth changes
+      client.auth.onAuthStateChange((event, session) => {
+        if (session) loginUser(session.user.email, session.user.id);
+      });
+
+      // 2. Refresh session if exists
+      const { data: { session } } = await client.auth.getSession();
       if (session) {
         loginUser(session.user.email, session.user.id);
+        return;
       }
-    });
-
-    // 2. Refresh session if exists
-    const { data: { session } } = await client.auth.getSession();
-    if (session) {
-      loginUser(session.user.email, session.user.id);
-      return; // Stop initialization as loginUser handles it
+    } catch (e) {
+      console.warn("Supabase connection or session check failed:", e);
+      isCloudEnabled = false; // Fallback to local if sync fails
     }
   }
 
@@ -168,7 +170,8 @@ function loginUser(user, cloudId = null) {
 }
 
 function finishInit() {
-  document.getElementById('user-name-tag').textContent = currentUser.split('@')[0];
+  const name = currentUser ? currentUser.split('@')[0] : 'User';
+  document.getElementById('user-name-tag').textContent = name;
   loadUserData().then(() => {
     initTheme();
     renderTopics();
