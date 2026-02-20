@@ -246,16 +246,31 @@ function logout() {
 }
 
 function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  const toggleBtn = document.getElementById('theme-toggle');
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
-    });
+  const savedTheme = localStorage.getItem('theme') || 'astro';
+  changeTheme(savedTheme, false);
+
+  const menuBtn = document.getElementById('theme-menu-btn');
+  const menu = document.getElementById('theme-menu');
+
+  if (menuBtn) {
+    menuBtn.onclick = (e) => {
+      e.stopPropagation();
+      menu.classList.toggle('hidden');
+    };
+  }
+
+  document.addEventListener('click', () => {
+    if (menu) menu.classList.add('hidden');
+  });
+}
+
+function changeTheme(theme, save = true) {
+  document.documentElement.setAttribute('data-theme', theme);
+  if (save) localStorage.setItem('theme', theme);
+
+  // Update charts if they exist
+  if (typeof renderCharts === 'function' && document.getElementById('dashboard-overlay') && !document.getElementById('dashboard-overlay').classList.contains('hidden')) {
+    renderCharts();
   }
 }
 
@@ -372,7 +387,11 @@ function renderTopics(query = '') {
                 <button class="notes-toggle ${notes[p.id] ? 'active' : ''}" onclick="toggleNotes(${p.id})" title="Notes">📝</button>
               </div>
             <div class="notes-section" id="notes-${p.id}">
-              <textarea class="notes-area" placeholder="Write your notes here..." oninput="updateNote(${p.id}, this.value)">${notes[p.id] || ''}</textarea>
+              <div class="notes-toolbar">
+                <button onclick="insertCodeSnippet(${p.id})">{"code"}</button>
+                <button onclick="toggleNotes(${p.id})">Close</button>
+              </div>
+              <textarea class="notes-area" id="textarea-${p.id}" placeholder="Write your notes here... (Supports code snippets)" oninput="updateNote(${p.id}, this.value)">${notes[p.id] || ''}</textarea>
             </div>
           </div>`).join('')}
       </div>`;
@@ -788,4 +807,17 @@ function updatePomoDisplay() {
 }
 
 initPomodoro();
+
+
+function insertCodeSnippet(pid) {
+  const textarea = document.getElementById('textarea-' + pid);
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+  const snippet = '```cpp\n// Your code here\n\n```';
+  textarea.value = text.substring(0, start) + snippet + text.substring(end);
+  textarea.focus();
+  textarea.setSelectionRange(start + 10, start + 25);
+  updateNote(pid, textarea.value);
+}
 

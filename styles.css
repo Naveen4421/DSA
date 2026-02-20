@@ -1046,3 +1046,97 @@ header {
 .login-form .input-group:focus-within + .auth-error-msg {
   display: none;
 }
+
+/* THEME MENU */
+.header-right {
+  position: relative;
+}
+
+.theme-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 1000;
+  min-width: 160px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  margin-top: 10px;
+}
+
+.theme-menu.hidden {
+  display: none;
+}
+
+.theme-menu button {
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 10px 16px;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+
+.theme-menu button:hover {
+  background: var(--surface2);
+  color: var(--orange);
+}
+
+/* LIGHT THEME VARIABLES */
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface2: #f1f5f9;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --orange: #f97316;
+}
+
+/* NOTES TOOLBAR */
+.notes-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  border-radius: 8px 8px 0 0;
+}
+
+.notes-toolbar button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.notes-toolbar button:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.notes-area {
+  border-radius: 0 0 8px 8px !important;
+  border-top: none !important;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}

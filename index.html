@@ -68,7 +68,13 @@
           <div class="hstat-label">Streak</div>
         </div>
       </div>
-      <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">🌓</button>
+      <button class="action-btn" id="theme-menu-btn" title="Change Theme">🎨 Theme</button>
+      <div id="theme-menu" class="theme-menu hidden">
+        <button onclick="changeTheme('astro')">🚀 Astro (Default)</button>
+        <button onclick="changeTheme('dracula')">🧛 Dracula</button>
+        <button onclick="changeTheme('cyberpunk')">⚡ Cyberpunk</button>
+        <button onclick="changeTheme('light')">☀️ Light Mode</button>
+      </div>
       <div class="action-btns">
         <button class="action-btn" onclick="toggleDashboard()" title="Analytics Dashboard">📊</button>
         <button class="action-btn" onclick="exportData()" title="Export Progress">📤</button>
