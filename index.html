@@ -53,7 +53,6 @@
       <div class="header-stats">
         <div class="user-profile" id="user-display">
           <span id="user-name-tag"></span>
-          <button class="logout-btn" onclick="logout()" title="Logout">🚪</button>
         </div>
         <div class="hstat">
           <div class="hstat-val" id="solved-count">0</div>
@@ -68,7 +67,22 @@
           <div class="hstat-label">Streak</div>
         </div>
       </div>
-      <button class="action-btn" id="theme-menu-btn" title="Change Theme">🎨 Theme</button>
+      <button class="action-btn" id="theme-menu-btn" title="Change Theme">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2c1.7 0 3.3.7 4.4 1.8" />
+          <path d="M12 22s-1-4-1-6 1-4 1-6" />
+          <path d="M12 2v2" />
+          <path d="M12 20v2" />
+          <path d="m4.9 4.9 1.4 1.4" />
+          <path d="m17.7 17.7 1.4 1.4" />
+          <path d="M2 12h2" />
+          <path d="M20 12h2" />
+          <path d="m6.3 17.7-1.4 1.4" />
+          <path d="m19.1 4.9-1.4 1.4" />
+        </svg>
+        <span>Theme</span>
+      </button>
       <div id="theme-menu" class="theme-menu hidden">
         <button onclick="changeTheme('astro')">🚀 Astro (Default)</button>
         <button onclick="changeTheme('dracula')">🧛 Dracula</button>
@@ -76,12 +90,35 @@
         <button onclick="changeTheme('light')">☀️ Light Mode</button>
       </div>
       <div class="action-btns">
-        <button class="action-btn" onclick="toggleDashboard()" title="Analytics Dashboard">📊</button>
-        <button class="action-btn" onclick="toggleLeaderboard()" title="Global Leaderboard">🏆</button>
-        <button class="action-btn" onclick="exportData()" title="Export Progress">📤</button>
-        <button class="action-btn" onclick="importData()" title="Import Progress">📥</button>
+        <button class="action-btn" onclick="toggleDashboard()" title="Analytics Dashboard">
+          <svg viewBox="0 0 24 24">
+            <path d="M18 20V10M12 20V4M6 20v-6" />
+          </svg>
+        </button>
+        <button class="action-btn" onclick="toggleLeaderboard()" title="Global Leaderboard">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-2.34M12 12A3 3 0 1 0 12 6a3 3 0 0 0 0 6Z" />
+          </svg>
+        </button>
+        <button class="action-btn" onclick="exportData()" title="Export Progress">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+          </svg>
+        </button>
+        <button class="action-btn" onclick="importData()" title="Import Progress">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+          </svg>
+        </button>
         <input type="file" id="import-input" style="display:none" accept=".json" onchange="handleImport(this)">
       </div>
+      <button class="logout-btn-premium" onclick="logout()" title="Logout">
+        <svg viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+        </svg>
+        <span>Logout</span>
+      </button>
       <button class="reset-btn" onclick="resetAll()">Reset All</button>
     </div>
   </header>

@@ -348,10 +348,16 @@ function ringColor(pct) {
 
 function renderTopics(query = '') {
   const container = document.getElementById('main-container');
+
+  if (!query && filterMode === 'all') {
+    renderSpecialSections();
+  } else {
+    const oldGrid = document.querySelector('.special-grid');
+    if (oldGrid) oldGrid.remove();
+  }
+
   // Remove old topic cards
   document.querySelectorAll('.topic-card').forEach(e => e.remove());
-  // Remove banner only on search
-  const banner = container.querySelector('.banner');
 
   let totalAll = 0, solvedAll = 0;
 
@@ -387,6 +393,7 @@ function renderTopics(query = '') {
                 <button class="star-btn ${localStorage.getItem('star_' + p.id) ? 'active' : ''}" onclick="toggleStar(${p.id}, this)" title="Star for Revision">⭐</button>
                 <div class="problem-name ${done[p.id] ? 'done-text' : ''}">
                   <a href="${p.url}" target="_blank">${p.name}</a>
+                  ${(done[p.id] && (Date.now() - done[p.id] > 7 * 24 * 60 * 60 * 1000)) ? '<span class="needs-revision-badge">Revision Needed</span>' : ''}
                 </div>
                 <button class="timer-btn" id="timer-btn-${p.id}" onclick="toggleTimer(${p.id})">⏱️ Start</button>
                 <span class="diff-badge ${diffClass(p.diff)}">${p.diff}</span>
@@ -860,11 +867,11 @@ async function fetchLeaderboard() {
       name: u.username ? u.username.split('@')[0] : 'Anonymous',
       solved: Object.keys(u.done_data || {}).length,
       isMe: u.username === currentUser
-    })).sort((a,b) => b.solved - a.solved).slice(0, 10);
+    })).sort((a, b) => b.solved - a.solved).slice(0, 10);
 
     list.innerHTML = rankings.map((u, i) => `
       <div class="leader-item ${u.isMe ? 'me' : ''}">
-        <div class="leader-rank">#${i+1}</div>
+        <div class="leader-rank">#${i + 1}</div>
         <div class="leader-name">${u.name} ${u.isMe ? ' (You)' : ''}</div>
         <div class="leader-score">${u.solved} solved</div>
       </div>
@@ -873,4 +880,65 @@ async function fetchLeaderboard() {
   } catch (e) {
     list.innerHTML = '<p style="padding:20px; text-align:center; color:var(--red)">Failed to load rankings.</p>';
   }
+}
+
+// ═══════════════════════════════════════════════
+//  DAILY CHALLENGE & REVISION LOGIC
+// ═══════════════════════════════════════════════
+
+function getDailyChallenge() {
+  const allProblems = TOPICS.flatMap(t => t.weeks.flatMap(w => w.problems));
+  // Use today's date as a seed
+  const today = new Date().toISOString().split('T')[0];
+  const seed = today.split('-').reduce((a, b) => parseInt(a) + parseInt(b), 0);
+  const index = seed % allProblems.length;
+  return allProblems[index];
+}
+
+function getRevisionProblems() {
+  const sevenDays = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  return TOPICS.flatMap(t => t.weeks.flatMap(w => w.problems))
+    .filter(p => done[p.id] && (now - done[p.id] > sevenDays))
+    .slice(0, 3);
+}
+
+function renderSpecialSections() {
+  const container = document.getElementById('main-container');
+  // Remove existing special grid if any
+  const oldGrid = document.querySelector('.special-grid');
+  if (oldGrid) oldGrid.remove();
+
+  const daily = getDailyChallenge();
+  const revision = getRevisionProblems();
+
+  const grid = document.createElement('div');
+  grid.className = 'special-grid';
+
+  grid.innerHTML = `
+    <div class="special-card daily">
+      <span class="special-tag">Daily Challenge</span>
+      <div class="special-title">${daily.name}</div>
+      <div style="margin-bottom:15px">
+        <span class="diff-badge ${diffClass(daily.diff)}">${daily.diff}</span>
+        <span class="pattern-tag">${daily.pattern}</span>
+      </div>
+      <a href="${daily.url}" target="_blank" class="special-action">🚀 Start Challenge</a>
+    </div>
+
+    <div class="special-card revision">
+      <span class="special-tag">Revision Needed</span>
+      <div class="special-title">${revision.length ? 'Refresh your Memory' : 'All caught up!'}</div>
+      <div class="revision-list">
+        ${revision.length ? revision.map(p => `
+          <div class="rev-item">
+            <span class="rev-name">${p.name}</span>
+            <span>Solved ${Math.floor((Date.now() - done[p.id]) / (1000 * 60 * 60 * 24))}d ago</span>
+          </div>
+        `).join('') : '<p style="font-size:13px">You are perfectly on track with your revision!</p>'}
+      </div>
+    </div>
+  `;
+
+  container.insertBefore(grid, container.firstChild);
 }
