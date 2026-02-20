@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 
 <body>
@@ -30,6 +31,7 @@
           <label for="password">Password</label>
           <input type="password" id="password" placeholder="••••••••">
         </div>
+        <div id="auth-error" class="auth-error-msg"></div>
         <button id="auth-btn" class="login-primary-btn">Login</button>
         <p class="login-toggle-text">
           Don't have an account? <a href="#" id="toggle-auth-mode">Sign Up</a>
@@ -68,6 +70,7 @@
       </div>
       <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">🌓</button>
       <div class="action-btns">
+        <button class="action-btn" onclick="toggleDashboard()" title="Analytics Dashboard">📊</button>
         <button class="action-btn" onclick="exportData()" title="Export Progress">📤</button>
         <button class="action-btn" onclick="importData()" title="Import Progress">📥</button>
         <input type="file" id="import-input" style="display:none" accept=".json" onchange="handleImport(this)">
@@ -75,6 +78,30 @@
       <button class="reset-btn" onclick="resetAll()">Reset All</button>
     </div>
   </header>
+
+  <div id="dashboard-overlay" class="dashboard-overlay hidden">
+    <div class="dashboard-content">
+      <div class="dashboard-header">
+        <h2>🚀 Performance Analytics</h2>
+        <button class="close-dashboard" onclick="toggleDashboard()">✕</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Consistency Heatmap</h3>
+          <div id="heatmap-chart"></div>
+        </div>
+        <div class="stat-card">
+          <h3>Difficulty Split</h3>
+          <div id="pie-chart"></div>
+        </div>
+        <div class="stat-card">
+          <h3>Topic Mastery</h3>
+          <div id="radar-chart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="progress-section">
     <span class="progress-label">Overall Progress</span>

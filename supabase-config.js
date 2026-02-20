@@ -1,11 +1,18 @@
 const SUPABASE_URL = 'https://wwpurmviubmukjelccmb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_5cbe3YP3AN_YB5Zo1bpjVQ_CkCEuhdI';
 
-// Initialize the Supabase client
-// Note: We use 'supabaseClient' to avoid shadowing the global 'supabase' object from the CDN
-const supabaseClient = (window.supabase && typeof window.supabase.createClient === 'function')
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
+let supabaseClient = null;
+
+function getSupabase() {
+  if (supabaseClient) return supabaseClient;
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log("✅ Supabase Client Initialized");
+    return supabaseClient;
+  }
+  console.error("❌ Supabase script not loaded yet!");
+  return null;
+}
 
 // SQL to run in Supabase SQL Editor:
 /*
