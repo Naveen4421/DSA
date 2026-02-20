@@ -32,14 +32,34 @@ async function initApp() {
   const client = getSupabase();
   isCloudEnabled = client && SUPABASE_URL && !SUPABASE_URL.includes('your-project-url');
 
+  if (isCloudEnabled) {
+    // 1. Listen for auth changes (like after clicking email link)
+    client.auth.onAuthStateChange((event, session) => {
+      console.log("Auth Event:", event);
+      if (session) {
+        loginUser(session.user.email, session.user.id);
+      }
+    });
+
+    // 2. Refresh session if exists
+    const { data: { session } } = await client.auth.getSession();
+    if (session) {
+      loginUser(session.user.email, session.user.id);
+      return; // Stop initialization as loginUser handles it
+    }
+  }
+
   if (!currentUser) {
     overlay.classList.remove('hidden');
 
     // Show Mode to user
     const modeLabel = document.createElement('div');
+    modeLabel.id = "auth-mode-label";
     modeLabel.style = "font-size: 10px; color: var(--muted); text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;";
     modeLabel.textContent = isCloudEnabled ? "🌐 Cloud Sync Active" : "💻 Local Storage Only";
-    document.querySelector('.login-header').appendChild(modeLabel);
+    if (!document.getElementById('auth-mode-label')) {
+      document.querySelector('.login-header').appendChild(modeLabel);
+    }
 
     if (isCloudEnabled) {
       document.querySelector('.input-group label[for="username"]').textContent = "Email address";
