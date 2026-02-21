@@ -5,8 +5,9 @@ import { TOPICS } from '@/lib/data';
 import Header from '@/components/Header';
 import TopicCard from '@/components/TopicCard';
 import LoginOverlay from '@/components/LoginOverlay';
+import AnalyticsHUD from '@/components/AnalyticsHUD';
 import useLocalStorage from '@/hooks/useLocalStorage';
-import { Search, Trophy, Timer, Flame, Layers, Sparkles } from 'lucide-react';
+import { Search, Sparkles, Filter, LayoutGrid, List } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
@@ -22,6 +23,7 @@ export default function TrackerDashboard() {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filterMode, setFilterMode] = useState('all');
+    const [viewMode, setViewMode] = useState('list');
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
@@ -129,40 +131,109 @@ export default function TrackerDashboard() {
     if (!isLoaded) return null;
 
     return (
-        <div className="min-h-screen pb-20">
+        <div className="min-h-screen pb-20 selection:bg-accent-blue selection:text-white">
             <AnimatePresence>{!user && <LoginOverlay onLogin={handleLogin} isCloudEnabled={true} error={authError} />}</AnimatePresence>
-            <Header user={user} solvedCount={solvedCount} totalCount={totalCount} streak={3} theme={theme} onLogout={handleLogout} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
-            <main className="max-w-4xl mx-auto px-4 mt-8">
-                <section className="mb-12">
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 mb-2"><Sparkles className="w-5 h-5 text-accent-yellow fill-accent-yellow/20" /><span className="text-xs font-bold uppercase tracking-widest text-muted">Core Tracker Engine</span></motion.div>
-                    <motion.h2 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="font-syne text-4xl font-extrabold tracking-tight mb-4">Road to Mastery</motion.h2>
-                    <p className="text-muted text-sm max-w-xl leading-relaxed">Systematic problem tracking with intelligent search and cloud synchronization.</p>
-                </section>
-                <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-                    {[{ label: 'Completion', val: `${Math.round((solvedCount / totalCount) * 100)}%`, icon: Trophy, color: 'text-accent-green' }, { label: 'Time Spent', val: '12.4h', icon: Timer, color: 'text-accent-blue' }, { label: 'Hot Streak', val: '5 Days', icon: Flame, color: 'text-accent-orange' }, { label: 'Remaining', val: totalCount - solvedCount, icon: Layers, color: 'text-accent-purple' }]
-                        .map((s, i) => (
-                            <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }} className="bg-surface border border-border rounded-2xl p-5"><s.icon className={`w-5 h-5 ${s.color} mb-3`} /><div className="font-syne text-2xl font-extrabold">{s.val}</div><div className="text-[10px] font-bold text-muted uppercase tracking-wider mt-1">{s.label}</div></motion.div>
-                        ))}
-                </section>
-                <section className="sticky top-24 z-40 bg-background/80 backdrop-blur-md mb-8 py-4 border-b border-border/10 flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div className="relative w-full md:w-96 group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-accent-blue transition-colors" />
-                        <input type="text" placeholder="Search problems..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-surface border border-border rounded-xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-accent-blue transition-all" />
+
+            <Header user={user} solvedCount={solvedCount} totalCount={totalCount} streak={7} theme={theme} onLogout={handleLogout} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
+
+            <main className="max-w-6xl mx-auto px-4 mt-12">
+
+                {/* Analytics Section */}
+                <AnalyticsHUD done={done} totalCount={totalCount} theme={theme} />
+
+                {/* Toolbar Section */}
+                <section className="sticky top-24 z-40 mb-12 py-4">
+                    <div className="glass-panel rounded-3xl p-3 flex flex-col md:flex-row items-center justify-between gap-4 border-white/5 shadow-2xl">
+
+                        <div className="relative w-full md:w-96 group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-accent-blue transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="Find a challenge..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-background/50 border border-border/50 rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-accent-blue transition-all"
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
+                            <div className="flex bg-background/50 p-1 rounded-2xl border border-border/50 mr-2">
+                                {[
+                                    { id: 'list', icon: List },
+                                    { id: 'grid', icon: LayoutGrid }
+                                ].map(mode => (
+                                    <button
+                                        key={mode.id}
+                                        onClick={() => setViewMode(mode.id)}
+                                        className={`p-2 rounded-xl transition-all ${viewMode === mode.id ? 'bg-accent-blue text-white shadow-lg' : 'text-muted hover:text-white'}`}
+                                    >
+                                        <mode.icon className="w-4 h-4" />
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+                                {['all', 'Easy', 'Medium', 'Hard'].map((mode) => (
+                                    <button
+                                        key={mode}
+                                        onClick={() => setFilterMode(mode)}
+                                        className={`px-5 py-2.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-all whitespace-nowrap ${filterMode === mode
+                                                ? 'bg-accent-blue text-white border-accent-blue shadow-lg shadow-accent-blue/20'
+                                                : 'bg-background/50 border-border/50 text-muted hover:border-accent-blue hover:text-white'
+                                            }`}
+                                    >
+                                        {mode}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex gap-2 w-full md:w-auto overflow-x-auto no-scrollbar pb-1 md:pb-0">
-                        {['all', 'Easy', 'Medium', 'Hard'].map((mode) => (
-                            <button key={mode} onClick={() => setFilterMode(mode)} className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all ${filterMode === mode ? 'bg-accent-blue text-white border-accent-blue' : 'bg-surface border-border text-muted hover:border-accent-blue'}`}>{mode}</button>
-                        ))}
-                    </div>
                 </section>
-                <section>
-                    {filteredTopics.map((topic, i) => (
-                        <motion.div key={topic.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.05 }}>
-                            <TopicCard topic={topic} done={done} notes={notes} stars={stars} onToggleDone={toggleDone} onToggleStar={() => { }} onUpdateNote={updateNote} />
+
+                {/* Topics Content */}
+                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+                    <AnimatePresence mode='popLayout'>
+                        {filteredTopics.map((topic, i) => (
+                            <motion.div
+                                layout
+                                key={topic.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.4, delay: i * 0.05 }}
+                            >
+                                <TopicCard
+                                    topic={topic}
+                                    done={done}
+                                    notes={notes}
+                                    stars={stars}
+                                    onToggleDone={toggleDone}
+                                    onToggleStar={() => { }}
+                                    onUpdateNote={updateNote}
+                                />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+
+                    {filteredTopics.length === 0 && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="col-span-full py-32 text-center"
+                        >
+                            <div className="inline-flex p-6 rounded-full bg-surface-hover mb-6">
+                                <Filter className="w-12 h-12 text-muted animate-pulse" />
+                            </div>
+                            <h3 className="text-2xl font-syne font-extrabold mb-2">No missions found</h3>
+                            <p className="text-muted text-sm">Adjust your filters to discover new challenges.</p>
                         </motion.div>
-                    ))}
-                </section>
+                    )}
+                </div>
             </main>
+
+            {/* Floating Decorative Elements */}
+            <div className="fixed top-1/4 -left-32 w-64 h-64 bg-accent-blue/5 blur-[120px] rounded-full -z-10 animate-pulse-glow" />
+            <div className="fixed bottom-1/4 -right-32 w-96 h-96 bg-accent-purple/5 blur-[150px] rounded-full -z-10 animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
         </div>
     );
 }

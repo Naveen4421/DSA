@@ -21,15 +21,24 @@ export default function ProfilePage() {
         });
     }, []);
 
-    // Process data for the graph
-    const processDailyData = () => {
+    // 1. Process data for the graph and metrics
+    const processUserStats = () => {
+        const timestamps = Object.values(done);
+        if (timestamps.length === 0) {
+            return { labels: [], seriesData: [], activeDays: 0, streak: 0, level: 1 };
+        }
+
         const dailyCounts = {};
-        Object.values(done).forEach(timestamp => {
-            const date = new Date(timestamp).toLocaleDateString();
-            dailyCounts[date] = (dailyCounts[date] || 0) + 1;
+        const uniqueDays = new Set();
+
+        timestamps.forEach(ts => {
+            const dateObj = new Date(ts);
+            const dateStr = dateObj.toLocaleDateString();
+            dailyCounts[dateStr] = (dailyCounts[dateStr] || 0) + 1;
+            uniqueDays.add(dateStr);
         });
 
-        // Get last 7 days including today
+        // Get last 7 days for chart
         const labels = [];
         const seriesData = [];
         for (let i = 6; i >= 0; i--) {
@@ -40,10 +49,26 @@ export default function ProfilePage() {
             seriesData.push(dailyCounts[dateStr] || 0);
         }
 
-        return { labels, seriesData };
+        // Calculate Streak
+        let streak = 0;
+        let checkDate = new Date();
+        // Check if solved today first
+        if (!dailyCounts[checkDate.toLocaleDateString()]) {
+            checkDate.setDate(checkDate.getDate() - 1); // If not today, check from yesterday
+        }
+
+        while (dailyCounts[checkDate.toLocaleDateString()]) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+        }
+
+        const activeDays = uniqueDays.size;
+        const level = Math.floor(timestamps.length / 5) + 1; // 1 level every 5 problems
+
+        return { labels, seriesData, activeDays, streak, level };
     };
 
-    const { labels, seriesData } = processDailyData();
+    const { labels, seriesData, activeDays, streak, level } = processUserStats();
 
     const chartOptions = {
         chart: {
@@ -107,7 +132,7 @@ export default function ProfilePage() {
                         <div className="flex gap-4">
                             <div className="bg-surface border border-border rounded-xl px-4 py-2 flex items-center gap-2">
                                 <Trophy className="w-4 h-4 text-accent-yellow" />
-                                <span className="text-xs font-bold uppercase tracking-wider">Level 12 Explorer</span>
+                                <span className="text-xs font-bold uppercase tracking-wider">Level {level} Explorer</span>
                             </div>
                         </div>
                     </div>
@@ -122,8 +147,8 @@ export default function ProfilePage() {
                         <div className="space-y-4">
                             {[
                                 { label: 'Total Solved', val: Object.keys(done).length, color: 'text-accent-green' },
-                                { label: 'Active Days', val: '14', color: 'text-accent-blue' },
-                                { label: 'Current Streak', val: '5 Days', color: 'text-accent-orange' },
+                                { label: 'Active Days', val: activeDays, color: 'text-accent-blue' },
+                                { label: 'Current Streak', val: `${streak} Days`, color: 'text-accent-orange' },
                             ].map((s, i) => (
                                 <div key={i} className="flex justify-between items-center border-b border-border/50 pb-3">
                                     <span className="text-muted text-xs font-bold uppercase tracking-wider">{s.label}</span>
@@ -139,7 +164,9 @@ export default function ProfilePage() {
                             <h3 className="font-syne font-bold">Astra Insight</h3>
                         </div>
                         <p className="text-sm text-white/70 leading-relaxed italic">
-                            "You are currently most active during late nights. Try solving one Hard problem tomorrow to unlock the 'Elite Hunter' badge."
+                            {Object.keys(done).length > 0
+                                ? `"You've already solved ${Object.keys(done).length} problems. Your consistency is showing! Keep pushing to reach Level ${level + 1}."`
+                                : `"Welcome aboard! Start your first challenge today to begin tracking your progress and unlock your Activity Matrix."`}
                         </p>
                     </div>
                 </div>
