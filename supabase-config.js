@@ -40,3 +40,11 @@ create policy "Users can update their own data"
   on public.user_data for update 
   using (auth.uid() = id);
 */
+
+/*
+  ⚠️ CRITICAL AUTH SETUP (If SignUp is failing):
+  1. Go to Supabase Dashboard -> Authentication -> Settings.
+  2. Under "Site URL", enter your GitHub Pages URL (e.g., https://Naveen4421.github.io/DSA/).
+  3. Under "External OAuth Providers", ensure "Confirm Email" is DISABLED if you want immediate signup.
+  4. If "Confirm Email" is ENABLED, you MUST check your email and click the link before you can login.
+*/

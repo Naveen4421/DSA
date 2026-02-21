@@ -91,39 +91,63 @@ async function initApp() {
       errorDiv.textContent = "";
 
       if (!userIdent || !pass) {
-        showError('Please enter both email and password.');
+        showError('Please enter both details.');
+        return;
+      }
+
+      // Basic Email Validation for Cloud Mode
+      if (isCloudEnabled && !userIdent.includes('@')) {
+        showError('Please enter a valid email address for Cloud Sync.');
         return;
       }
 
       authBtn.disabled = true;
       const originalText = authBtn.textContent;
-      authBtn.textContent = isSignUpMode ? "Creating Account..." : "Logging in...";
+      authBtn.textContent = "Processing...";
 
       try {
         if (isCloudEnabled) {
           if (isSignUpMode) {
             if (pass.length < 6) throw new Error("Password must be at least 6 characters.");
+            console.log("Attempting Cloud Sign Up for:", userIdent);
             const { data, error } = await client.auth.signUp({ email: userIdent, password: pass });
-            if (error) throw error;
+
+            if (error) {
+              if (error.message.includes("rate limit")) {
+                throw new Error("Too many attempts. Please try again in an hour or disable Email Confirmation in Supabase.");
+              }
+              throw error;
+            }
+
+            console.log("Sign Up Response:", data);
 
             if (data.user && data.session) {
               loginUser(data.user.email, data.user.id);
-            } else {
-              showSuccess("Check your email for a confirmation link!");
+            } else if (data.user) {
+              showSuccess("Account created! PLEASE CHECK YOUR EMAIL to confirm before logging in.");
               isSignUpMode = false;
               authBtn.textContent = "Login";
               toggleText.innerHTML = `Don't have an account? <a href="#" id="toggle-auth-mode">Sign Up</a>`;
+            } else {
+              throw new Error("Sign up failed for an unknown reason. Check Supabase logs.");
             }
           } else {
+            console.log("Attempting Cloud Login for:", userIdent);
             const { data, error } = await client.auth.signInWithPassword({ email: userIdent, password: pass });
-            if (error) throw error;
+            if (error) {
+              if (error.message.toLowerCase().includes("email not confirmed")) {
+                throw new Error("Please confirm your email link before logging in.");
+              }
+              throw error;
+            }
             loginUser(data.user.email, data.user.id);
           }
         } else {
           // Local fallback
-          let users = JSON.parse(localStorage.getItem('dsa_users') || '{}');
+          console.log("Using Local Mode for:", userIdent);
+          let users = JSON.parse(localStorage.getItem('dsa_users') || '{"Naveen":"4421"}');
           if (isSignUpMode) {
-            if (users[userIdent]) throw new Error("User already exists.");
+            if (users[userIdent]) throw new Error("User already exists locally.");
             users[userIdent] = pass;
             localStorage.setItem('dsa_users', JSON.stringify(users));
             loginUser(userIdent);
@@ -131,7 +155,7 @@ async function initApp() {
             if (users[userIdent] === pass) {
               loginUser(userIdent);
             } else {
-              throw new Error("Invalid username or password.");
+              throw new Error("Invalid local username or password.");
             }
           }
         }
