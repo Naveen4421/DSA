@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import { Brain, LogOut, Moon, Sun, Flame, User, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -71,28 +72,26 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                         </div>
 
                         <div className="flex items-center gap-2 p-1.5 bg-surface border border-border rounded-2xl">
-                            <div className="w-8 h-8 rounded-xl bg-accent-blue/10 flex items-center justify-center border border-accent-blue/20 overflow-hidden group/avatar">
-                                {avatarUrl ? (
-                                    <img
-                                        src={avatarUrl}
-                                        alt="Profile"
-                                        className="w-full h-full object-cover transition-transform group-hover/avatar:scale-110"
-                                        onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src = ""; // Fallback will trigger if src is empty
-                                        }}
-                                    />
-                                ) : (
-                                    <span className="text-[10px] font-bold text-accent-blue tracking-tighter">{initials}</span>
-                                )}
-                            </div>
+                            <Link href="/profile" className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-xl bg-accent-blue/10 flex items-center justify-center border border-accent-blue/20 overflow-hidden group/avatar cursor-pointer">
+                                    {avatarUrl ? (
+                                        <img
+                                            src={avatarUrl}
+                                            alt="Profile"
+                                            className="w-full h-full object-cover transition-transform group-hover/avatar:scale-110"
+                                        />
+                                    ) : (
+                                        <span className="text-[10px] font-bold text-accent-blue tracking-tighter">{initials}</span>
+                                    )}
+                                </div>
 
-                            <div className="hidden sm:flex flex-col mr-2">
-                                <span className="text-[10px] font-bold uppercase tracking-tight text-white leading-tight truncate max-w-[80px]">
-                                    {userEmail.split('@')[0]}
-                                </span>
-                                <span className="text-[9px] font-medium text-accent-blue/80 leading-tight">Commander</span>
-                            </div>
+                                <div className="hidden sm:flex flex-col mr-2 cursor-pointer">
+                                    <span className="text-[10px] font-bold uppercase tracking-tight text-white leading-tight truncate max-w-[80px]">
+                                        {userEmail.split('@')[0]}
+                                    </span>
+                                    <span className="text-[9px] font-medium text-accent-blue/80 leading-tight">Commander</span>
+                                </div>
+                            </Link>
 
                             <button
                                 onClick={onLogout}
