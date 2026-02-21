@@ -10,17 +10,15 @@ The DSA Mastery Tracker is a modern, full-stack web application designed to help
 - **Backend/Database**: [Supabase](https://supabase.com/) (PostgreSQL + Auth)
 - **Deployment**: [Vercel](https://vercel.com/)
 
-## Core Components
+## Server/Client Division (Architecture)
 
-### 1. Authentication (`/components/LoginOverlay.js`)
-- Uses Supabase Auth for Email/Password logic.
-- Managed via `onAuthStateChange` listener in the root `page.js`.
-- Supports "Local Mode" fallback if database connection is unavailable.
+### 1. Server Components (`app/`)
+- **`app/page.js`**: The main entry point is a **Server Component**. This ensures fast initial delivery and provides SEO metadata directly from the server.
+- **`app/layout.js`**: Managed globally on the server to handle fonts, meta tags, and high-level structure.
 
-### 2. State Management (`/app/page.js` & `/hooks/useLocalStorage.js`)
-- Primary state (solved problems, notes, stars) is managed using React `useState`.
-- Persistent storage is handled via a custom `useLocalStorage` hook to ensure data remains after refreshes.
-- Cloud Sync: Every update is debounced and synced to Supabase `user_data` table for multi-device access.
+### 2. Client Components (`components/`)
+- **`components/TrackerDashboard.js`**: This is the application's "Interactive Engine." It is marked with `"use client"` and handles all React state, Supabase auth listeners, and browser storage.
+- **`components/TopicCard.js`**, **`components/LoginOverlay.js`**: Interactive UI fragments that respond to user events.
 
 ### 3. Problem Discovery (`/lib/data.js`)
 - A centralized JSON-like structure containing 129+ hand-picked problems.
