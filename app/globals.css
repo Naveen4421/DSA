@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-accent-green: var(--accent-green);
+  --color-accent-yellow: var(--accent-yellow);
+  --color-accent-red: var(--accent-red);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-purple: var(--accent-purple);
+  --color-accent-orange: var(--accent-orange);
+}
+
+:root {
+  --background: #0D1117;
+  --foreground: #E6EDF3;
+  --surface: #161B22;
+  --surface-hover: #21262D;
+  --border: #30363D;
+  --muted: #7D8590;
+  --accent-green: #3FB950;
+  --accent-yellow: #D29922;
+  --accent-red: #F85149;
+  --accent-blue: #58A6FF;
+  --accent-purple: #BC8CFF;
+  --accent-orange: #F97316;
+}
+
+[data-theme="light"] {
+  --background: #F0F2F5;
+  --foreground: #1F2937;
+  --surface: #FFFFFF;
+  --surface-hover: #F9FAFB;
+  --border: #D1D5DB;
+  --muted: #6B7280;
+  --accent-green: #059669;
+  --accent-yellow: #D97706;
+  --accent-red: #DC2626;
+  --accent-blue: #2563EB;
+  --accent-purple: #7C3AED;
+  --accent-orange: #EA580C;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'DM Sans', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(22, 27, 34, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-light {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+}
