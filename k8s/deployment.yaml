@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dsa-tracker
+  labels:
+    app: dsa-tracker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dsa-tracker
+  template:
+    metadata:
+      labels:
+        app: dsa-tracker
+    spec:
+      containers:
+      - name: dsa-tracker
+        image: naveen4421/dsa-tracker:latest
+        ports:
+        - containerPort: 3000
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+        env:
+        - name: NEXT_PUBLIC_SUPABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: dsa-secrets
+              key: supabase-url
+        - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+          valueFrom:
+            secretKeyRef:
+              name: dsa-secrets
+              key: supabase-key
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dsa-tracker-service
+spec:
+  selector:
+    app: dsa-tracker
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
