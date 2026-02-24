@@ -8,40 +8,40 @@ import { TOPICS } from '@/lib/data';
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 export default function AnalyticsHUD({ done, totalCount, theme }) {
-    const solvedCount = Object.keys(done).length;
-    const progress = totalCount > 0 ? Math.round((solvedCount / totalCount) * 100) : 0;
+    const { solvedCount, progress, difficultyStats, solvedToday, solvedThisWeek, solvedDp } = React.useMemo(() => {
+        const solvedCount = Object.keys(done).length;
+        const progress = totalCount > 0 ? Math.round((solvedCount / totalCount) * 100) : 0;
 
-    // 1. Calculate real difficulty breakdown
-    const allProblems = TOPICS.flatMap(t => t.weeks.flatMap(w => w.problems));
-    const difficultyStats = { Easy: 0, Medium: 0, Hard: 0 };
+        const allProblems = TOPICS.flatMap(t => t.weeks.flatMap(w => w.problems));
+        const difficultyStats = { Easy: 0, Medium: 0, Hard: 0 };
 
-    Object.keys(done).forEach(pid => {
-        const problem = allProblems.find(p => p.id === parseInt(pid));
-        if (problem) {
-            difficultyStats[problem.diff]++;
-        }
-    });
+        Object.keys(done).forEach(pid => {
+            const problem = allProblems.find(p => p.id === parseInt(pid));
+            if (problem) {
+                difficultyStats[problem.diff]++;
+            }
+        });
+
+        const today = new Date().toLocaleDateString();
+        const solvedToday = Object.values(done).filter(timestamp =>
+            new Date(timestamp).toLocaleDateString() === today
+        ).length;
+
+        const startOfWeek = new Date();
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+        const solvedThisWeek = Object.values(done).filter(timestamp =>
+            new Date(timestamp) >= startOfWeek
+        ).length;
+
+        const dpTopic = TOPICS.find(t => t.id === 'dp');
+        const dpProblems = dpTopic ? dpTopic.weeks.flatMap(w => w.problems) : [];
+        const solvedDp = dpProblems.filter(p => done[p.id]).length;
+
+        return { solvedCount, progress, difficultyStats, solvedToday, solvedThisWeek, solvedDp };
+    }, [done, totalCount]);
 
     const chartSeries = [difficultyStats.Easy, difficultyStats.Medium, difficultyStats.Hard];
-
-    // 2. Calculate "Solved Today"
-    const today = new Date().toLocaleDateString();
-    const solvedToday = Object.values(done).filter(timestamp =>
-        new Date(timestamp).toLocaleDateString() === today
-    ).length;
-
-    // 3. Weekly Target (Example: 15 per week)
     const weeklyTarget = 15;
-    const startOfWeek = new Date();
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-    const solvedThisWeek = Object.values(done).filter(timestamp =>
-        new Date(timestamp) >= startOfWeek
-    ).length;
-
-    // 4. Achievement Logic
-    const dpTopic = TOPICS.find(t => t.id === 'dp');
-    const dpProblems = dpTopic ? dpTopic.weeks.flatMap(w => w.problems) : [];
-    const solvedDp = dpProblems.filter(p => done[p.id]).length;
 
     const chartOptions = {
         chart: { type: 'donut', background: 'transparent' },

@@ -25,27 +25,47 @@ export default function TrackerDashboard() {
     const [filterMode, setFilterMode] = useState('all');
     const [viewMode, setViewMode] = useState('list');
 
+    // Unified Load State
     useEffect(() => {
+        // 1. Theme initialization
         document.documentElement.setAttribute('data-theme', theme);
 
+        // 2. Initial Session Check (Only once on mount)
+        let isMounted = true;
+
         supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                setUser(session.user);
-                loadCloudData(session.user.id);
-            }
-            setIsLoaded(true);
-        });
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session) {
-                setUser(session.user);
-                loadCloudData(session.user.id);
-            } else {
-                setUser(null);
+            if (isMounted) {
+                if (session) {
+                    setUser(session.user);
+                    loadCloudData(session.user.id);
+                }
+                setIsLoaded(true);
             }
         });
 
-        return () => subscription.unsubscribe();
+        // 3. Auth Listener (Only once on mount)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (isMounted) {
+                if (session) {
+                    setUser(session.user);
+                    if (event === 'SIGNED_IN') {
+                        loadCloudData(session.user.id);
+                    }
+                } else {
+                    setUser(null);
+                }
+            }
+        });
+
+        return () => {
+            isMounted = false;
+            subscription.unsubscribe();
+        };
+    }, []);
+
+    // Theme effect
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
 
     const loadCloudData = async (userId) => {
@@ -117,18 +137,32 @@ export default function TrackerDashboard() {
     const solvedCount = Object.keys(done).length;
     const totalCount = TOPICS.reduce((acc, t) => acc + t.weeks.reduce((a, w) => a + w.problems.length, 0), 0);
 
-    const filteredTopics = TOPICS.map(topic => {
-        const filteredWeeks = topic.weeks.map(week => ({
-            ...week,
-            problems: week.problems.filter(p => (
-                (p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.pattern.toLowerCase().includes(searchQuery.toLowerCase())) &&
-                (filterMode === 'all' || p.diff === filterMode)
-            ))
-        })).filter(w => w.problems.length > 0);
-        return { ...topic, weeks: filteredWeeks };
-    }).filter(t => t.weeks.length > 0 || (searchQuery === '' && filterMode === 'all'));
+    const filteredTopics = React.useMemo(() => {
+        return TOPICS.map(topic => {
+            const filteredWeeks = topic.weeks.map(week => ({
+                ...week,
+                problems: week.problems.filter(p => (
+                    (p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.pattern.toLowerCase().includes(searchQuery.toLowerCase())) &&
+                    (filterMode === 'all' || p.diff === filterMode)
+                ))
+            })).filter(w => w.problems.length > 0);
+            return { ...topic, weeks: filteredWeeks };
+        }).filter(t => t.weeks.length > 0 || (searchQuery === '' && filterMode === 'all'));
+    }, [searchQuery, filterMode]);
 
-    if (!isLoaded) return null;
+    if (!isLoaded) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                    className="w-12 h-12 border-4 border-accent-blue/20 border-t-accent-blue rounded-full mb-4"
+                />
+                <h2 className="font-syne font-bold text-xl animate-pulse">Initializing Dashboard...</h2>
+                <p className="text-muted text-sm mt-2">Checking your progress in the secure cloud...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen pb-20 selection:bg-accent-blue selection:text-white">
@@ -178,8 +212,8 @@ export default function TrackerDashboard() {
                                         key={mode}
                                         onClick={() => setFilterMode(mode)}
                                         className={`px-5 py-2.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-all whitespace-nowrap ${filterMode === mode
-                                                ? 'bg-accent-blue text-white border-accent-blue shadow-lg shadow-accent-blue/20'
-                                                : 'bg-background/50 border-border/50 text-muted hover:border-accent-blue hover:text-white'
+                                            ? 'bg-accent-blue text-white border-accent-blue shadow-lg shadow-accent-blue/20'
+                                            : 'bg-background/50 border-border/50 text-muted hover:border-accent-blue hover:text-white'
                                             }`}
                                     >
                                         {mode}
