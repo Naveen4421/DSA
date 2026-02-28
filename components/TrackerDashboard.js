@@ -30,10 +30,13 @@ export default function TrackerDashboard() {
         // 1. Theme initialization
         document.documentElement.setAttribute('data-theme', theme);
 
-        // 2. Initial Session Check (Only once on mount)
-        let isMounted = true;
+        // 2. Initial Session Check
+        const isReady = supabase &&
+            process.env.NEXT_PUBLIC_SUPABASE_URL &&
+            !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder');
 
-        if (supabase) {
+        let isMounted = true;
+        if (isReady) {
             supabase.auth.getSession().then(({ data: { session } }) => {
                 if (isMounted) {
                     if (session) {
@@ -43,6 +46,9 @@ export default function TrackerDashboard() {
                     setIsLoaded(true);
                 }
             });
+        } else {
+            // Handle missing keys for local-only mode
+            setIsLoaded(true);
         }
 
         // 3. Auth Listener (Only once on mount)
