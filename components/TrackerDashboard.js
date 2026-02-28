@@ -102,6 +102,14 @@ export default function TrackerDashboard() {
 
     const handleLogin = async (email, password, isSignUp) => {
         setAuthError(null);
+
+        // 🚨 Guard: Check for missing configuration
+        if (!process.env.NEXT_PUBLIC_SUPABASE_URL ||
+            process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')) {
+            setAuthError("Configuration Missing: Please add your Supabase URL and Key in Vercel/Settings.");
+            return;
+        }
+
         try {
             let result = isSignUp
                 ? await supabase.auth.signUp({ email, password })
