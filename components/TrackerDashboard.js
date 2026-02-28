@@ -33,33 +33,39 @@ export default function TrackerDashboard() {
         // 2. Initial Session Check (Only once on mount)
         let isMounted = true;
 
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (isMounted) {
-                if (session) {
-                    setUser(session.user);
-                    loadCloudData(session.user.id);
-                }
-                setIsLoaded(true);
-            }
-        });
-
-        // 3. Auth Listener (Only once on mount)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (isMounted) {
-                if (session) {
-                    setUser(session.user);
-                    if (event === 'SIGNED_IN') {
+        if (supabase) {
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                if (isMounted) {
+                    if (session) {
+                        setUser(session.user);
                         loadCloudData(session.user.id);
                     }
-                } else {
-                    setUser(null);
+                    setIsLoaded(true);
                 }
-            }
-        });
+            });
+        }
+
+        // 3. Auth Listener (Only once on mount)
+        let subscription;
+        if (supabase) {
+            const { data } = supabase.auth.onAuthStateChange((event, session) => {
+                if (isMounted) {
+                    if (session) {
+                        setUser(session.user);
+                        if (event === 'SIGNED_IN') {
+                            loadCloudData(session.user.id);
+                        }
+                    } else {
+                        setUser(null);
+                    }
+                }
+            });
+            subscription = data.subscription;
+        }
 
         return () => {
             isMounted = false;
-            subscription.unsubscribe();
+            if (subscription) subscription.unsubscribe();
         };
     }, []);
 
