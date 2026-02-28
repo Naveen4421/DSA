@@ -101,37 +101,43 @@ export default function TrackerDashboard() {
         await supabase.from('user_data').upsert(updates);
     };
 
-    const handleLogin = async (email, password, isSignUp) => {
+    const handleLogin = async (email, password, mode) => {
         setAuthError(null);
+        console.log("Attempting login...", { email, mode });
 
-        // 🟢 Guest Mode Toggle
-        if (isSignUp === 'GUEST') {
-            setIsLoaded(true);
+        // 1. Guest Mode Bypass
+        if (mode === 'GUEST') {
             setUser({ id: 'guest', email: 'guest@local' });
+            setIsLoaded(true);
             return;
         }
 
-        // 1. Check if Supabase is properly configured
-        const hasRealCredentials = process.env.NEXT_PUBLIC_SUPABASE_URL &&
-            !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder');
+        // 2. Configuration Check
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        const isConfigured = url && !url.includes('placeholder') && key && !key.includes('placeholder');
 
-        if (!hasRealCredentials) {
-            setAuthError("Configuration Error: Please ensure your Supabase URL and Key are added to Vercel and then redeploy.");
+        if (!isConfigured) {
+            setAuthError("Configuration Error: Real Supabase API keys were not found in this build. Please Redeploy in Vercel.");
             return;
         }
 
         try {
-            const { data, error } = isSignUp
+            // Safety: isSignUp is the 3rd arg in the component, named 'mode' here
+            const isSigningUp = mode === true;
+
+            const { data, error } = isSigningUp
                 ? await supabase.auth.signUp({ email, password })
                 : await supabase.auth.signInWithPassword({ email, password });
 
             if (error) throw error;
 
-            if (isSignUp && !data.session) {
-                alert("Account created! Please verify your email to continue.");
+            if (isSigningUp && !data.session) {
+                alert("Please check your email to verify your account!");
             }
         } catch (e) {
-            setAuthError(e.message || "An unexpected error occurred. Please check your credentials.");
+            console.error("Supabase Auth Error:", e);
+            setAuthError(e.message || "Could not connect to Supabase. Check your internet or API keys.");
         }
     };
 
