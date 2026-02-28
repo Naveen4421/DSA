@@ -92,11 +92,21 @@ export default function LoginOverlay({ onLogin, isCloudEnabled, error }) {
                 <p className="mt-8 text-center text-sm text-muted font-medium">
                     {isSignUp ? 'Already on a journey?' : "New to the path?"}{' '}
                     <button
+                        type="button"
                         onClick={() => setIsSignUp(!isSignUp)}
                         className="text-accent-blue font-bold hover:underline"
                     >
                         {isSignUp ? 'Log in here' : 'Sign up now'}
                     </button>
+                    <div className="mt-4 pt-4 border-t border-border/50">
+                        <button
+                            type="button"
+                            onClick={() => onLogin(null, null, 'GUEST')}
+                            className="text-muted hover:text-white transition-colors text-xs font-bold uppercase tracking-widest"
+                        >
+                            Or proceed in Guest Mode (Offline)
+                        </button>
+                    </div>
                 </p>
 
                 {!isCloudEnabled && (

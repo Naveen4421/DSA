@@ -81,6 +81,7 @@ export default function TrackerDashboard() {
     }, [theme]);
 
     const loadCloudData = async (userId) => {
+        if (!userId || userId === 'guest') return;
         try {
             const { data } = await supabase.from('user_data').select('*').eq('id', userId).single();
             if (data) {
@@ -93,7 +94,7 @@ export default function TrackerDashboard() {
     };
 
     const syncToCloud = async (newData, type) => {
-        if (!user) return;
+        if (!user || user.id === 'guest' || !supabase) return;
         const updates = { id: user.id, updated_at: new Date().toISOString() };
         if (type === 'done') updates.done_data = newData;
         if (type === 'notes') updates.notes_data = newData;
@@ -103,21 +104,34 @@ export default function TrackerDashboard() {
     const handleLogin = async (email, password, isSignUp) => {
         setAuthError(null);
 
-        // 🚨 Guard: Check for missing configuration
-        if (!process.env.NEXT_PUBLIC_SUPABASE_URL ||
-            process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')) {
-            setAuthError("Configuration Missing: Please add your Supabase URL and Key in Vercel/Settings.");
+        // 🟢 Guest Mode Toggle
+        if (isSignUp === 'GUEST') {
+            setIsLoaded(true);
+            setUser({ id: 'guest', email: 'guest@local' });
+            return;
+        }
+
+        // 1. Check if Supabase is properly configured
+        const hasRealCredentials = process.env.NEXT_PUBLIC_SUPABASE_URL &&
+            !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder');
+
+        if (!hasRealCredentials) {
+            setAuthError("Configuration Error: Please ensure your Supabase URL and Key are added to Vercel and then redeploy.");
             return;
         }
 
         try {
-            let result = isSignUp
+            const { data, error } = isSignUp
                 ? await supabase.auth.signUp({ email, password })
                 : await supabase.auth.signInWithPassword({ email, password });
-            if (result.error) throw result.error;
-            if (isSignUp && !result.data.session) alert("Check your email!");
+
+            if (error) throw error;
+
+            if (isSignUp && !data.session) {
+                alert("Account created! Please verify your email to continue.");
+            }
         } catch (e) {
-            setAuthError(e.message);
+            setAuthError(e.message || "An unexpected error occurred. Please check your credentials.");
         }
     };
 
