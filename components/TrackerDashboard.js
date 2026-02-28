@@ -103,41 +103,45 @@ export default function TrackerDashboard() {
 
     const handleLogin = async (email, password, mode) => {
         setAuthError(null);
-        console.log("Attempting login...", { email, mode });
 
-        // 1. Guest Mode Bypass
+        // 1. Guest Mode - Instant Access
         if (mode === 'GUEST') {
             setUser({ id: 'guest', email: 'guest@local' });
-            setIsLoaded(true);
             return;
         }
 
         // 2. Configuration Check
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        const isConfigured = url && !url.includes('placeholder') && key && !key.includes('placeholder');
+        const isConfigured = url && !url.includes('placeholder');
 
         if (!isConfigured) {
-            setAuthError("Configuration Error: Real Supabase API keys were not found in this build. Please Redeploy in Vercel.");
+            setAuthError("Build Error: Your environment variables weren't ready when this build started. Please click 'Redeploy' in Vercel.");
             return;
         }
 
         try {
-            // Safety: isSignUp is the 3rd arg in the component, named 'mode' here
             const isSigningUp = mode === true;
 
-            const { data, error } = isSigningUp
-                ? await supabase.auth.signUp({ email, password })
-                : await supabase.auth.signInWithPassword({ email, password });
+            // Add a timeout to the auth call
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Connection Timeout: The database is taking too long to respond. Check your internet or Supabase status.")), 15000)
+            );
+
+            const authPromise = isSigningUp
+                ? supabase.auth.signUp({ email, password })
+                : supabase.auth.signInWithPassword({ email, password });
+
+            // Race the auth call against the timeout
+            const { data, error } = await Promise.race([authPromise, timeoutPromise]);
 
             if (error) throw error;
 
             if (isSigningUp && !data.session) {
-                alert("Please check your email to verify your account!");
+                alert("Account created! Verify your email to login.");
             }
         } catch (e) {
-            console.error("Supabase Auth Error:", e);
-            setAuthError(e.message || "Could not connect to Supabase. Check your internet or API keys.");
+            console.warn("Auth process failed:", e.message);
+            setAuthError(e.message || "An unexpected error occurred.");
         }
     };
 
