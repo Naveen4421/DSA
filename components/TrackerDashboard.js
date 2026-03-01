@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import TopicCard from '@/components/TopicCard';
 import LoginOverlay from '@/components/LoginOverlay';
 import AnalyticsHUD from '@/components/AnalyticsHUD';
+import ActivityHeatmap from '@/components/ActivityHeatmap';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Search, Sparkles, Filter, LayoutGrid, List } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -218,6 +219,9 @@ export default function TrackerDashboard() {
 
                 {/* Analytics Section */}
                 <AnalyticsHUD done={done} totalCount={totalCount} theme={theme} />
+
+                {/* Activity Heatmap Section */}
+                <ActivityHeatmap doneData={done} />
 
                 {/* Toolbar Section */}
                 <section className="sticky top-24 z-40 mb-12 py-4">
