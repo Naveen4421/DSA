@@ -7,6 +7,7 @@ import TopicCard from '@/components/TopicCard';
 import LoginOverlay from '@/components/LoginOverlay';
 import AnalyticsHUD from '@/components/AnalyticsHUD';
 import ActivityHeatmap from '@/components/ActivityHeatmap';
+import AchievementHUD from '@/components/AchievementHUD';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Search, Sparkles, Filter, LayoutGrid, List } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -216,6 +217,9 @@ export default function TrackerDashboard() {
             <Header user={user} solvedCount={solvedCount} totalCount={totalCount} streak={7} theme={theme} onLogout={handleLogout} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
 
             <main className="max-w-6xl mx-auto px-4 mt-12">
+
+                {/* Achievements Section */}
+                <AchievementHUD doneData={done} topics={TOPICS} />
 
                 {/* Analytics Section */}
                 <AnalyticsHUD done={done} totalCount={totalCount} theme={theme} />
