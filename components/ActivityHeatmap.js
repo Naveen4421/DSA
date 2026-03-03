@@ -73,7 +73,7 @@ const ActivityHeatmap = ({ doneData }) => {
                                 >
                                     {/* Tooltip */}
                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-background-secondary border border-white/10 rounded-lg text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-2xl">
-                                        <span className="text-white font-bold">{day.count} solved</span>
+                                        <span className="text-white font-bold">{day.count} Problems Mastered</span>
                                         <span className="text-muted ml-2">{day.date}</span>
                                     </div>
                                 </motion.div>
