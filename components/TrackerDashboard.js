@@ -179,7 +179,7 @@ export default function TrackerDashboard() {
     };
 
     const updateNote = (pid, val) => {
-        const newNotes = { ...notes };
+        const newNotes = { ...(notes || {}) };
         val.trim() ? newNotes[pid] = val : delete newNotes[pid];
         setNotes(newNotes);
         syncToCloud(newNotes, 'notes');
@@ -187,21 +187,21 @@ export default function TrackerDashboard() {
 
     const toggleStar = (pid, e) => {
         if (e) e.stopPropagation();
-        const newStars = { ...stars };
+        const newStars = { ...(stars || {}) };
         newStars[pid] ? delete newStars[pid] : newStars[pid] = true;
         setStars(newStars);
         syncToCloud(newStars, 'stars');
     };
 
     const updateSolution = (pid, val) => {
-        const newSolutions = { ...solutions };
+        const newSolutions = { ...(solutions || {}) };
         val.trim() ? newSolutions[pid] = val : delete newSolutions[pid];
         setSolutions(newSolutions);
         syncToCloud(newSolutions, 'solutions');
     };
 
-    const solvedCount = Object.keys(done).length;
-    const totalCount = TOPICS.reduce((acc, t) => acc + t.weeks.reduce((a, w) => a + w.problems.length, 0), 0);
+    const solvedCount = Object.keys(done || {}).length;
+    const totalCount = TOPICS.reduce((acc, t) => acc + (t.weeks?.reduce((a, w) => a + (w.problems?.length || 0), 0) || 0), 0);
 
     const filteredTopics = React.useMemo(() => {
         return TOPICS.map(topic => {
@@ -209,12 +209,12 @@ export default function TrackerDashboard() {
                 ...week,
                 problems: week.problems.filter(p => (
                     (p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.pattern.toLowerCase().includes(searchQuery.toLowerCase())) &&
-                    (filterMode === 'all' || p.diff === filterMode || (filterMode === 'starred' && stars[p.id]))
+                    (filterMode === 'all' || p.diff === filterMode || (filterMode === 'starred' && stars?.[p.id]))
                 ))
             })).filter(w => w.problems.length > 0);
             return { ...topic, weeks: filteredWeeks };
         }).filter(t => t.weeks.length > 0 || (searchQuery === '' && filterMode === 'all'));
-    }, [searchQuery, filterMode]);
+    }, [searchQuery, filterMode, stars]);
 
     if (!isLoaded) {
         return (
@@ -310,10 +310,10 @@ export default function TrackerDashboard() {
                             >
                                 <TopicCard
                                     topic={topic}
-                                    done={done}
-                                    notes={notes}
-                                    stars={stars}
-                                    solutions={solutions}
+                                    done={done || {}}
+                                    notes={notes || {}}
+                                    stars={stars || {}}
+                                    solutions={solutions || {}}
                                     onToggleDone={toggleDone}
                                     onToggleStar={toggleStar}
                                     onUpdateNote={updateNote}
