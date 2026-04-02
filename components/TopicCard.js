@@ -14,7 +14,8 @@ export default function TopicCard({ topic, done, notes, stars, solutions, onTogg
 
     const allProblems = topic.weeks.flatMap(w => w.problems);
     const total = allProblems.length;
-    const solved = allProblems.filter(p => done[p.id]).length;
+    const safeDone = done || {};
+    const solved = allProblems.filter(p => safeDone[p.id]).length;
     const percent = total > 0 ? Math.round((solved / total) * 100) : 0;
 
     const circum = 2 * Math.PI * 18;
@@ -90,10 +91,10 @@ export default function TopicCard({ topic, done, notes, stars, solutions, onTogg
                                     <ProblemRow
                                         key={p.id}
                                         problem={p}
-                                        isDone={!!done[p.id]}
-                                        isStarred={!!stars[p.id]}
-                                        note={notes[p.id]}
-                                        solution={solutions[p.id]}
+                                        isDone={!!(done?.[p.id])}
+                                        isStarred={!!(stars?.[p.id])}
+                                        note={notes?.[p.id]}
+                                        solution={solutions?.[p.id]}
                                         onToggleDone={(e) => onToggleDone(p.id, topic.id, e)}
                                         onToggleStar={(e) => onToggleStar(p.id, e)}
                                         onUpdateNote={(val) => onUpdateNote(p.id, val)}
