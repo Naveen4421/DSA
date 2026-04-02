@@ -9,7 +9,7 @@ import AnalyticsHUD from '@/components/AnalyticsHUD';
 import ActivityHeatmap from '@/components/ActivityHeatmap';
 import AchievementHUD from '@/components/AchievementHUD';
 import useLocalStorage from '@/hooks/useLocalStorage';
-import { Search, Sparkles, Filter, LayoutGrid, List, Star } from 'lucide-react';
+import { Search, Sparkles, Filter, LayoutGrid, List, Star as StarIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
@@ -88,7 +88,7 @@ export default function TrackerDashboard() {
     const loadCloudData = async (userId) => {
         if (!userId || userId === 'guest') return;
         try {
-            const { data } = await supabase.from('user_data').select('*').eq('id', userId).single();
+            const { data } = await supabase.from('user_data').select('*').eq('id', userId).maybeSingle();
             if (data) {
                 if (data.done_data && Object.keys(data.done_data).length > Object.keys(done).length) setDone(data.done_data);
                 if (data.notes_data && Object.keys(data.notes_data).length > Object.keys(notes).length) setNotes(data.notes_data);
@@ -290,7 +290,7 @@ export default function TrackerDashboard() {
                                             : 'bg-background/50 border-border/50 text-muted hover:border-accent-blue hover:text-white'
                                             }`}
                                     >
-                                        {mode === 'starred' ? <div className="flex items-center gap-1.5"><Star className="w-3 h-3 fill-current" /> {mode}</div> : mode}
+                                        {mode === 'starred' ? <div className="flex items-center gap-1.5"><StarIcon className="w-3 h-3 fill-current" /> {mode}</div> : mode}
                                     </button>
                                 ))}
                             </div>
