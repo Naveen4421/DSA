@@ -7,9 +7,10 @@ import { Trophy, Star, Zap, Flame, Target, Award } from 'lucide-react';
 const AchievementHUD = ({ doneData, topics }) => {
     // 1. Calculate Achievements
     const achievements = useMemo(() => {
-        const solvedCount = Object.keys(doneData).length;
+        const safeDone = doneData || {};
+        const solvedCount = Object.keys(safeDone).length;
         const todayStr = new Date().toLocaleDateString();
-        const solvedToday = Object.values(doneData).filter(t => new Date(t).toLocaleDateString() === todayStr).length;
+        const solvedToday = Object.values(safeDone).filter(t => new Date(t).toLocaleDateString() === todayStr).length;
 
         return [
             {
@@ -43,8 +44,8 @@ const AchievementHUD = ({ doneData, topics }) => {
                 icon: Award,
                 color: 'text-fuchsia-400',
                 isUnlocked: topics.some(t => {
-                    const allT = t.weeks.flatMap(w => w.problems);
-                    return allT.length > 0 && allT.every(p => doneData[p.id]);
+                    const allT = t.weeks?.flatMap(w => w.problems) || [];
+                    return allT.length > 0 && allT.every(p => safeDone[p.id]);
                 })
             }
         ];
@@ -72,8 +73,8 @@ const AchievementHUD = ({ doneData, topics }) => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={`group relative p-4 rounded-2xl border transition-all duration-500 overflow-hidden ${item.isUnlocked
-                                ? 'bg-background-secondary border-white/10 shadow-xl'
-                                : 'bg-transparent border-white/5 grayscale pointer-events-none'
+                            ? 'bg-background-secondary border-white/10 shadow-xl'
+                            : 'bg-transparent border-white/5 grayscale pointer-events-none'
                             }`}
                     >
                         {/* Shimmer Effect */}
