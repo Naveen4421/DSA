@@ -88,10 +88,10 @@ export default function TrackerDashboard() {
         try {
             const { data } = await supabase.from('user_data').select('*').eq('id', userId).single();
             if (data) {
-                if (Object.keys(data.done_data || {}).length > Object.keys(done).length) setDone(data.done_data);
-                if (Object.keys(data.notes_data || {}).length > Object.keys(notes).length) setNotes(data.notes_data);
-                if (Object.keys(data.stars_data || {}).length > Object.keys(stars).length) setStars(data.stars_data);
-                if (Object.keys(data.solutions_data || {}).length > Object.keys(solutions).length) setSolutions(data.solutions_data);
+                if (data.done_data && Object.keys(data.done_data).length > Object.keys(done).length) setDone(data.done_data);
+                if (data.notes_data && Object.keys(data.notes_data).length > Object.keys(notes).length) setNotes(data.notes_data);
+                if (data.stars_data && Object.keys(data.stars_data).length > Object.keys(stars).length) setStars(data.stars_data);
+                if (data.solutions_data && Object.keys(data.solutions_data).length > Object.keys(solutions).length) setSolutions(data.solutions_data);
             }
         } catch (e) {
             console.error("Cloud fetch failed:", e);
@@ -162,7 +162,7 @@ export default function TrackerDashboard() {
 
     const toggleDone = (pid, topicId, e) => {
         e.stopPropagation();
-        const newDone = { ...done };
+        const newDone = { ...(done || {}) };
         if (newDone[pid]) {
             delete newDone[pid];
         } else {

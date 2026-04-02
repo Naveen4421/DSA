@@ -8,14 +8,15 @@ import { TOPICS } from '@/lib/data';
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 export default function AnalyticsHUD({ done, totalCount, theme }) {
-    const { solvedCount, progress, difficultyStats, solvedToday, solvedThisWeek, solvedDp } = React.useMemo(() => {
-        const solvedCount = Object.keys(done).length;
+    const { solvedCount, progress, difficultyStats, solvedToday, solvedThisWeek, solvedDp, topicStats } = React.useMemo(() => {
+        const safeDone = done || {};
+        const solvedCount = Object.keys(safeDone).length;
         const progress = totalCount > 0 ? Math.round((solvedCount / totalCount) * 100) : 0;
 
         const allProblems = TOPICS.flatMap(t => t.weeks.flatMap(w => w.problems));
         const difficultyStats = { Easy: 0, Medium: 0, Hard: 0 };
 
-        Object.keys(done).forEach(pid => {
+        Object.keys(safeDone).forEach(pid => {
             const problem = allProblems.find(p => p.id === parseInt(pid));
             if (problem) {
                 difficultyStats[problem.diff]++;
@@ -23,23 +24,23 @@ export default function AnalyticsHUD({ done, totalCount, theme }) {
         });
 
         const today = new Date().toLocaleDateString();
-        const solvedToday = Object.values(done).filter(timestamp =>
+        const solvedToday = Object.values(safeDone).filter(timestamp =>
             new Date(timestamp).toLocaleDateString() === today
         ).length;
 
         const startOfWeek = new Date();
         startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-        const solvedThisWeek = Object.values(done).filter(timestamp =>
+        const solvedThisWeek = Object.values(safeDone).filter(timestamp =>
             new Date(timestamp) >= startOfWeek
         ).length;
 
         const dpTopic = TOPICS.find(t => t.id === 'dp');
         const dpProblems = dpTopic ? dpTopic.weeks.flatMap(w => w.problems) : [];
-        const solvedDp = dpProblems.filter(p => done[p.id]).length;
+        const solvedDp = dpProblems.filter(p => safeDone[p.id]).length;
 
         const topicStats = TOPICS.map(t => {
             const allTopicProblems = t.weeks.flatMap(w => w.problems);
-            const solved = allTopicProblems.filter(p => done[p.id]).length;
+            const solved = allTopicProblems.filter(p => safeDone[p.id]).length;
             return {
                 name: t.title,
                 percent: allTopicProblems.length > 0 ? Math.round((solved / allTopicProblems.length) * 100) : 0
