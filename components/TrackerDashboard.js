@@ -9,7 +9,7 @@ import AnalyticsHUD from '@/components/AnalyticsHUD';
 import ActivityHeatmap from '@/components/ActivityHeatmap';
 import AchievementHUD from '@/components/AchievementHUD';
 import useLocalStorage from '@/hooks/useLocalStorage';
-import { Search, Sparkles, Filter, LayoutGrid, List } from 'lucide-react';
+import { Search, Sparkles, Filter, LayoutGrid, List, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
