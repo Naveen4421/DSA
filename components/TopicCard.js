@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { ChevronDown, ExternalLink, Check, Star, Timer, MessageSquare, Code } from 'lucide-react';
+import { ChevronDown, ExternalLink, Check, Star as StarIcon, Timer, MessageSquare, Code } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -161,7 +161,7 @@ function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, 
                         onClick={onToggleStar}
                         className={cn("p-1.5 rounded-lg transition-colors", isStarred ? "text-accent-yellow" : "text-muted hover:bg-background")}
                     >
-                        <Star className={cn("w-4 h-4", isStarred && "fill-current")} />
+                        <StarIcon className={cn("w-4 h-4", isStarred && "fill-current")} />
                     </button>
 
                     <button

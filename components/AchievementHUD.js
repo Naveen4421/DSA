@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Star, Zap, Flame, Target, Award } from 'lucide-react';
+import { Trophy, Star as StarIcon, Zap, Flame, Target, Award } from 'lucide-react';
 
 const AchievementHUD = ({ doneData, topics }) => {
     // 1. Calculate Achievements
