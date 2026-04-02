@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Brain, LogOut, Moon, Sun, Flame, User, Bell } from "lucide-react";
+import { Brain, LogOut, Moon, Sun, Flame, User, Bell, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Header({ user, solvedCount, totalCount, streak, onLogout, onToggleTheme, theme }) {
@@ -11,6 +11,12 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
     const avatarUrl = user?.user_metadata?.avatar_url;
     const userEmail = user?.email || "";
     const initials = userEmail.substring(0, 2).toUpperCase() || "??";
+
+    const shareProgress = () => {
+        const text = `🚀 DSA Astra Mission Report\n\nConquered: ${solvedCount}/${totalCount} challenges (${progress}%)\nStreak: ${streak} Days 🔥\n\nTrack your DSA journey with precision.`;
+        navigator.clipboard.writeText(text);
+        alert("Mission Report copied to clipboard! 🚀");
+    };
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border bg-background/60 backdrop-blur-2xl px-4 py-3 md:px-8">
@@ -59,6 +65,13 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
 
                     <div className="flex items-center gap-2 border-l border-border pl-4 md:pl-8">
                         <div className="flex items-center gap-2 mr-2">
+                            <button
+                                onClick={shareProgress}
+                                className="p-2.5 rounded-xl border border-transparent hover:border-border hover:bg-surface-hover transition-all text-muted hover:text-white"
+                                title="Share Mission Report"
+                            >
+                                <Share2 className="w-5 h-5" />
+                            </button>
                             <button className="p-2.5 rounded-xl border border-transparent hover:border-border hover:bg-surface-hover transition-all relative">
                                 <Bell className="w-5 h-5 text-muted hover:text-white" />
                                 <span className="absolute top-2 right-2 w-2 h-2 bg-accent-red rounded-full border-2 border-background" />

@@ -9,7 +9,7 @@ function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 
-export default function TopicCard({ topic, done, notes, onToggleDone, onToggleNotes, onUpdateNote, onToggleStar, stars }) {
+export default function TopicCard({ topic, done, notes, stars, solutions, onToggleDone, onToggleStar, onUpdateNote, onUpdateSolution }) {
     const [isOpen, setIsOpen] = useState(false);
 
     const allProblems = topic.weeks.flatMap(w => w.problems);
@@ -91,12 +91,13 @@ export default function TopicCard({ topic, done, notes, onToggleDone, onToggleNo
                                         key={p.id}
                                         problem={p}
                                         isDone={!!done[p.id]}
-                                        isStarred={!!stars[`star_${p.id}`]}
+                                        isStarred={!!stars[p.id]}
                                         note={notes[p.id]}
+                                        solution={solutions[p.id]}
                                         onToggleDone={(e) => onToggleDone(p.id, topic.id, e)}
                                         onToggleStar={(e) => onToggleStar(p.id, e)}
-                                        onToggleNotes={() => onToggleNotes(p.id)}
                                         onUpdateNote={(val) => onUpdateNote(p.id, val)}
+                                        onUpdateSolution={(val) => onUpdateSolution(p.id, val)}
                                     />
                                 ))}
                             </div>
@@ -108,8 +109,9 @@ export default function TopicCard({ topic, done, notes, onToggleDone, onToggleNo
     );
 }
 
-function ProblemRow({ problem, isDone, isStarred, note, onToggleDone, onToggleStar, onToggleNotes, onUpdateNote }) {
-    const [isNotesOpen, setIsNotesOpen] = useState(false);
+function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, onToggleStar, onUpdateNote, onUpdateSolution }) {
+    const [isExtraOpen, setIsExtraOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('notes'); // 'notes' or 'solution'
 
     const getDiffClass = (diff) => {
         if (diff === 'Easy') return 'bg-accent-green/10 text-accent-green border-accent-green/20';
@@ -162,10 +164,17 @@ function ProblemRow({ problem, isDone, isStarred, note, onToggleDone, onToggleSt
                     </button>
 
                     <button
-                        onClick={() => setIsNotesOpen(!isNotesOpen)}
+                        onClick={() => { setIsExtraOpen(!isExtraOpen); setActiveTab('notes'); }}
                         className={cn("p-1.5 rounded-lg transition-colors", note ? "text-accent-blue" : "text-muted hover:bg-background")}
                     >
                         <MessageSquare className="w-4 h-4" />
+                    </button>
+
+                    <button
+                        onClick={() => { setIsExtraOpen(!isExtraOpen); setActiveTab('solution'); }}
+                        className={cn("p-1.5 rounded-lg transition-colors", solution ? "text-accent-purple" : "text-muted hover:bg-background")}
+                    >
+                        <Code className="w-4 h-4" />
                     </button>
 
                     <a
@@ -180,24 +189,59 @@ function ProblemRow({ problem, isDone, isStarred, note, onToggleDone, onToggleSt
             </div>
 
             <AnimatePresence>
-                {isNotesOpen && (
+                {isExtraOpen && (
                     <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         className="bg-background/20 px-6 pb-6"
                     >
-                        <div className="pl-10 space-y-3">
-                            <div className="flex items-center gap-2 text-xs font-bold text-muted uppercase tracking-wider">
-                                <Code className="w-3 h-3" />
-                                Problem Notes
+                        <div className="pl-10">
+                            <div className="flex items-center gap-1 mb-4 border-b border-border/50">
+                                {['notes', 'solution'].map(tab => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={cn(
+                                            "px-4 py-2 text-[10px] font-bold uppercase tracking-widest border-b-2 transition-all",
+                                            activeTab === tab ? "border-accent-blue text-accent-blue" : "border-transparent text-muted hover:text-white"
+                                        )}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
                             </div>
-                            <textarea
-                                value={note || ""}
-                                onChange={(e) => onUpdateNote(e.target.value)}
-                                placeholder="Write your solution approach or notes here..."
-                                className="w-full bg-surface border border-border rounded-xl p-4 text-sm focus:outline-none focus:border-accent-blue transition-all min-height-[120px]"
-                            />
+
+                            {activeTab === 'notes' ? (
+                                <div className="space-y-3">
+                                    <textarea
+                                        value={note || ""}
+                                        onChange={(e) => onUpdateNote(e.target.value)}
+                                        placeholder="Write your solution approach or notes here..."
+                                        className="w-full bg-surface border border-border rounded-xl p-4 text-sm focus:outline-none focus:border-accent-blue transition-all min-h-[120px]"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    <div className="relative group">
+                                        <textarea
+                                            value={solution || ""}
+                                            onChange={(e) => onUpdateSolution(e.target.value)}
+                                            placeholder="// Paste your optimized solution here..."
+                                            className="w-full bg-black/40 border border-border rounded-xl p-4 text-xs font-mono focus:outline-none focus:border-accent-purple transition-all min-h-[200px] text-white/90"
+                                        />
+                                        <div className="absolute top-3 right-3 flex gap-2">
+                                            <button
+                                                onClick={() => navigator.clipboard.writeText(solution || "")}
+                                                className="p-1.5 bg-white/5 rounded-lg text-muted hover:text-white transition-colors"
+                                                title="Copy Code"
+                                            >
+                                                <Code className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 )}

@@ -37,7 +37,16 @@ export default function AnalyticsHUD({ done, totalCount, theme }) {
         const dpProblems = dpTopic ? dpTopic.weeks.flatMap(w => w.problems) : [];
         const solvedDp = dpProblems.filter(p => done[p.id]).length;
 
-        return { solvedCount, progress, difficultyStats, solvedToday, solvedThisWeek, solvedDp };
+        const topicStats = TOPICS.map(t => {
+            const allTopicProblems = t.weeks.flatMap(w => w.problems);
+            const solved = allTopicProblems.filter(p => done[p.id]).length;
+            return {
+                name: t.title,
+                percent: allTopicProblems.length > 0 ? Math.round((solved / allTopicProblems.length) * 100) : 0
+            };
+        }).sort((a, b) => b.percent - a.percent);
+
+        return { solvedCount, progress, difficultyStats, solvedToday, solvedThisWeek, solvedDp, topicStats };
     }, [done, totalCount]);
 
     const chartSeries = [difficultyStats.Easy, difficultyStats.Medium, difficultyStats.Hard];
@@ -146,6 +155,43 @@ export default function AnalyticsHUD({ done, totalCount, theme }) {
                 <button className="mt-8 bg-white text-accent-purple font-bold text-xs uppercase tracking-widest py-3 rounded-xl transition-all hover:shadow-lg active:scale-95">
                     View Certifications
                 </button>
+            </motion.div>
+
+            {/* Topic Breakdown Card */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="col-span-1 lg:col-span-3 glass-panel p-8 rounded-[32px]"
+            >
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <div className="flex items-center gap-2 text-accent-blue font-bold text-xs uppercase tracking-[0.2em] mb-1">
+                            <Zap className="w-4 h-4" />
+                            Sub-Mission Status
+                        </div>
+                        <h4 className="text-2xl font-syne font-extrabold">Topic-Wise Mastery</h4>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {topicStats.map((topic, i) => (
+                        <div key={i} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-bold text-muted uppercase tracking-wider">{topic.name}</span>
+                                <span className="text-xs font-bold text-accent-blue">{topic.percent}%</span>
+                            </div>
+                            <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${topic.percent}%` }}
+                                    className="h-full bg-gradient-to-r from-accent-blue to-accent-purple"
+                                    transition={{ duration: 1, delay: i * 0.1 }}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </motion.div>
         </div>
     );

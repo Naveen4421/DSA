@@ -20,6 +20,7 @@ export default function TrackerDashboard() {
     const [done, setDone] = useLocalStorage('dsa_done', {});
     const [notes, setNotes] = useLocalStorage('dsa_notes', {});
     const [stars, setStars] = useLocalStorage('dsa_stars', {});
+    const [solutions, setSolutions] = useLocalStorage('dsa_solutions', {});
     const [theme, setTheme] = useLocalStorage('theme', 'dark');
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -87,8 +88,10 @@ export default function TrackerDashboard() {
         try {
             const { data } = await supabase.from('user_data').select('*').eq('id', userId).single();
             if (data) {
-                if (Object.keys(data.done_data).length > Object.keys(done).length) setDone(data.done_data);
-                if (Object.keys(data.notes_data).length > Object.keys(notes).length) setNotes(data.notes_data);
+                if (Object.keys(data.done_data || {}).length > Object.keys(done).length) setDone(data.done_data);
+                if (Object.keys(data.notes_data || {}).length > Object.keys(notes).length) setNotes(data.notes_data);
+                if (Object.keys(data.stars_data || {}).length > Object.keys(stars).length) setStars(data.stars_data);
+                if (Object.keys(data.solutions_data || {}).length > Object.keys(solutions).length) setSolutions(data.solutions_data);
             }
         } catch (e) {
             console.error("Cloud fetch failed:", e);
@@ -100,6 +103,8 @@ export default function TrackerDashboard() {
         const updates = { id: user.id, updated_at: new Date().toISOString() };
         if (type === 'done') updates.done_data = newData;
         if (type === 'notes') updates.notes_data = newData;
+        if (type === 'stars') updates.stars_data = newData;
+        if (type === 'solutions') updates.solutions_data = newData;
         await supabase.from('user_data').upsert(updates);
     };
 
@@ -180,6 +185,21 @@ export default function TrackerDashboard() {
         syncToCloud(newNotes, 'notes');
     };
 
+    const toggleStar = (pid, e) => {
+        if (e) e.stopPropagation();
+        const newStars = { ...stars };
+        newStars[pid] ? delete newStars[pid] : newStars[pid] = true;
+        setStars(newStars);
+        syncToCloud(newStars, 'stars');
+    };
+
+    const updateSolution = (pid, val) => {
+        const newSolutions = { ...solutions };
+        val.trim() ? newSolutions[pid] = val : delete newSolutions[pid];
+        setSolutions(newSolutions);
+        syncToCloud(newSolutions, 'solutions');
+    };
+
     const solvedCount = Object.keys(done).length;
     const totalCount = TOPICS.reduce((acc, t) => acc + t.weeks.reduce((a, w) => a + w.problems.length, 0), 0);
 
@@ -189,7 +209,7 @@ export default function TrackerDashboard() {
                 ...week,
                 problems: week.problems.filter(p => (
                     (p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.pattern.toLowerCase().includes(searchQuery.toLowerCase())) &&
-                    (filterMode === 'all' || p.diff === filterMode)
+                    (filterMode === 'all' || p.diff === filterMode || (filterMode === 'starred' && stars[p.id]))
                 ))
             })).filter(w => w.problems.length > 0);
             return { ...topic, weeks: filteredWeeks };
@@ -259,7 +279,7 @@ export default function TrackerDashboard() {
                             </div>
 
                             <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
-                                {['all', 'Easy', 'Medium', 'Hard'].map((mode) => (
+                                {['all', 'Easy', 'Medium', 'Hard', 'starred'].map((mode) => (
                                     <button
                                         key={mode}
                                         onClick={() => setFilterMode(mode)}
@@ -268,7 +288,7 @@ export default function TrackerDashboard() {
                                             : 'bg-background/50 border-border/50 text-muted hover:border-accent-blue hover:text-white'
                                             }`}
                                     >
-                                        {mode}
+                                        {mode === 'starred' ? <div className="flex items-center gap-1.5"><Star className="w-3 h-3 fill-current" /> {mode}</div> : mode}
                                     </button>
                                 ))}
                             </div>
@@ -293,9 +313,11 @@ export default function TrackerDashboard() {
                                     done={done}
                                     notes={notes}
                                     stars={stars}
+                                    solutions={solutions}
                                     onToggleDone={toggleDone}
-                                    onToggleStar={() => { }}
+                                    onToggleStar={toggleStar}
                                     onUpdateNote={updateNote}
+                                    onUpdateSolution={updateSolution}
                                 />
                             </motion.div>
                         ))}
