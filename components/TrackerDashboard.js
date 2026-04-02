@@ -23,6 +23,7 @@ export default function TrackerDashboard() {
     const [solutions, setSolutions] = useLocalStorage('dsa_solutions', {});
     const [theme, setTheme] = useLocalStorage('theme', 'dark');
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filterMode, setFilterMode] = useState('all');
@@ -30,6 +31,7 @@ export default function TrackerDashboard() {
 
     // Unified Load State
     useEffect(() => {
+        setIsMounted(true);
         // 1. Theme initialization
         document.documentElement.setAttribute('data-theme', theme);
 
@@ -216,7 +218,7 @@ export default function TrackerDashboard() {
         }).filter(t => t.weeks.length > 0 || (searchQuery === '' && filterMode === 'all'));
     }, [searchQuery, filterMode, stars]);
 
-    if (!isLoaded) {
+    if (!isLoaded || !isMounted) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-background">
                 <motion.div
