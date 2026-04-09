@@ -9,13 +9,12 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Header({ user, solvedCount, totalCount, streak, onLogout, onToggleTheme, theme, onOpenBadges, onShowProblems, onShowExplore }) {
+export default function Header({ user, solvedCount, totalCount, streak, onLogout, onToggleTheme, theme, onOpenBadges, onShowExplore }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const menuRef = useRef(null);
     const progress = totalCount > 0 ? Math.round((solvedCount / totalCount) * 100) : 0;
 
-    // Close menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -33,7 +32,7 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
     const navLinks = [
         { name: "Explore", icon: LayoutGrid, href: "/" },
         { name: "Contests", icon: Swords, href: "/", badge: "Patterns" },
-        { name: "Mission Log", icon: BarChart3, href: "/profile" },
+        { name: "Astra Log", icon: BarChart3, href: "/profile" },
         { name: "Badges", icon: Trophy, href: "/profile" }
     ];
 
@@ -57,7 +56,7 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                     </div>
                 </div>
 
-                {/* Product Navigation (LeetCode Style) */}
+                {/* Unified System Navigation */}
                 <nav className="hidden lg:flex items-center gap-1">
                     {navLinks.map((link) => (
                         <div key={link.name} className="flex">
@@ -98,15 +97,13 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                             )}
                         </div>
                     ))}
-                    {/* Ghost Problems Trigger for Dev testing if needed, though hidden per user request */}
                 </nav>
 
-                {/* Search Bar (LeetCode Style) */}
                 <div className="hidden md:flex flex-1 max-w-md relative group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-accent-blue transition-colors" />
                     <input
                         type="text"
-                        placeholder="Search problems, patterns, or algorithms..."
+                        placeholder="Search problems or patterns..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full bg-surface border border-border group-focus-within:border-accent-blue/50 rounded-2xl py-2.5 pl-11 pr-4 text-sm focus:outline-none transition-all placeholder:text-muted/50"
@@ -117,7 +114,6 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                 </div>
 
                 <div className="flex items-center gap-4">
-                    {/* User Performance (Astra Metrics) */}
                     <div className="flex items-center gap-6 mr-2">
                         <div className="hidden sm:flex flex-col items-end">
                             <div className="flex items-center gap-1.5">
@@ -132,19 +128,14 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                                 />
                             </div>
                         </div>
-
                         <div className="flex items-center gap-2 bg-surface/50 border border-border rounded-xl px-3 py-1.5">
                             <Flame className="w-4 h-4 text-accent-orange" />
                             <span className="font-syne text-xs font-bold leading-none">{streak}</span>
                         </div>
                     </div>
 
-                    {/* Desktop Toolbar */}
                     <div className="flex items-center gap-1 border-l border-border pl-4">
-                        <button
-                            onClick={onToggleTheme}
-                            className="p-2.5 rounded-xl hover:bg-surface transition-all text-muted hover:text-white"
-                        >
+                        <button onClick={onToggleTheme} className="p-2.5 rounded-xl hover:bg-surface transition-all text-muted hover:text-white">
                             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </button>
                         <button className="p-2.5 rounded-xl hover:bg-surface transition-all relative">
@@ -152,74 +143,36 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                             <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-accent-red rounded-full border border-background" />
                         </button>
 
-                        {/* Profile Dropdown */}
                         <div className="relative ml-2" ref={menuRef}>
-                            <div
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="flex items-center gap-2 p-1.5 bg-surface border border-border rounded-2xl cursor-pointer hover:border-accent-blue/50 transition-all group"
-                            >
+                            <div onClick={() => setIsMenuOpen(!isMenuOpen)} className="flex items-center gap-2 p-1.5 bg-surface border border-border rounded-2xl cursor-pointer hover:border-accent-blue/50 transition-all group">
                                 <div className="w-8 h-8 rounded-xl bg-accent-blue/10 flex items-center justify-center border border-accent-blue/20 overflow-hidden">
-                                    {avatarUrl ? (
-                                        <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-[10px] font-bold text-accent-blue">{initials}</span>
-                                    )}
+                                    {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : <span className="text-[10px] font-bold text-accent-blue">{initials}</span>}
                                 </div>
                                 <ChevronDown className={`w-3.5 h-3.5 text-muted transition-transform duration-300 ${isMenuOpen ? 'rotate-180' : ''}`} />
                             </div>
-
                             <AnimatePresence>
                                 {isMenuOpen && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                        className="absolute top-full right-0 mt-3 w-64 bg-[#0F1217]/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-2xl"
-                                    >
+                                    <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute top-full right-0 mt-3 w-64 bg-[#0F1217]/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-2xl">
                                         <div className="p-4 border-b border-white/5 bg-accent-blue/5">
                                             <p className="text-[9px] font-bold text-accent-blue uppercase tracking-widest mb-1">Authenticated As</p>
                                             <p className="text-xs font-medium text-white/70 truncate">{userEmail}</p>
                                         </div>
-
                                         <div className="p-2">
                                             <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
                                                 <button className="w-full flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all group">
-                                                    <div className="w-8 h-8 rounded-lg bg-accent-blue/10 flex items-center justify-center border border-accent-blue/20">
-                                                        <User className="w-4 h-4 text-accent-blue" />
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <p className="text-xs font-bold text-white group-hover:text-accent-blue transition-colors">View Profile</p>
-                                                        <span className="text-[9px] text-muted">Astra Commander</span>
-                                                    </div>
+                                                    <div className="w-8 h-8 rounded-lg bg-accent-blue/10 flex items-center justify-center border border-accent-blue/20"><User className="w-4 h-4 text-accent-blue" /></div>
+                                                    <div className="text-left"><p className="text-xs font-bold text-white group-hover:text-accent-blue transition-colors">View Profile</p><span className="text-[9px] text-muted">Astra Commander</span></div>
                                                 </button>
                                             </Link>
-
-                                            <button
-                                                onClick={() => { setIsMenuOpen(false); }}
-                                                className="w-full flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all group"
-                                            >
-                                                <div className="w-8 h-8 rounded-lg bg-accent-purple/10 flex items-center justify-center border border-accent-purple/20">
-                                                    <Settings className="w-4 h-4 text-accent-purple" />
-                                                </div>
-                                                <div className="text-left">
-                                                    <p className="text-xs font-bold text-white group-hover:text-accent-purple transition-colors">Settings</p>
-                                                    <span className="text-[9px] text-muted">Preferences</span>
-                                                </div>
+                                            <button onClick={() => setIsMenuOpen(false)} className="w-full flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all group">
+                                                <div className="w-8 h-8 rounded-lg bg-accent-purple/10 flex items-center justify-center border border-accent-purple/20"><Settings className="w-4 h-4 text-accent-purple" /></div>
+                                                <div className="text-left"><p className="text-xs font-bold text-white group-hover:text-accent-purple transition-colors">Settings</p><span className="text-[9px] text-muted">Preferences</span></div>
                                             </button>
                                         </div>
-
                                         <div className="p-2 border-t border-white/5">
-                                            <button
-                                                onClick={() => { setIsMenuOpen(false); onLogout(); }}
-                                                className="w-full flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-accent-red/10 transition-all text-accent-red"
-                                            >
-                                                <div className="w-8 h-8 rounded-lg bg-accent-red/10 flex items-center justify-center border border-accent-red/20 text-accent-red">
-                                                    <LogOut className="w-4 h-4" />
-                                                </div>
-                                                <div className="text-left">
-                                                    <p className="text-xs font-bold">Logout</p>
-                                                    <span className="text-[9px] opacity-70">End session</span>
-                                                </div>
+                                            <button onClick={() => { setIsMenuOpen(false); onLogout(); }} className="w-full flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-accent-red/10 transition-all text-accent-red">
+                                                <div className="w-8 h-8 rounded-lg bg-accent-red/10 flex items-center justify-center border border-accent-red/20 text-accent-red"><LogOut className="w-4 h-4" /></div>
+                                                <div className="text-left"><p className="text-xs font-bold">Logout</p><span className="text-[9px] opacity-70">End session</span></div>
                                             </button>
                                         </div>
                                     </motion.div>

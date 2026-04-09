@@ -250,7 +250,6 @@ export default function TrackerDashboard() {
                 onLogout={handleLogout}
                 onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 onOpenBadges={() => setIsBadgeShowcaseOpen(true)}
-                onShowProblems={() => setViewMode('table')}
                 onShowExplore={() => setViewMode('list')}
             />
 
