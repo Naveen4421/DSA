@@ -4,7 +4,8 @@ import Link from "next/link";
 import {
     Brain, LogOut, Moon, Sun, Flame, User, Bell,
     Share2, Settings, ExternalLink, ChevronDown,
-    Search, LayoutGrid, Terminal, BarChart3, Trophy
+    Search, LayoutGrid, Terminal, BarChart3, Trophy,
+    Swords, Target
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -32,9 +33,9 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
     const navLinks = [
         { name: "Explore", icon: LayoutGrid, href: "/" },
         { name: "Problems", icon: Brain, href: "/" },
-        { name: "Neural Lab", icon: BarChart3, href: "/profile" },
-        { name: "Astra IDE", icon: Terminal, href: "/" },
-        { name: "Certificates", icon: Trophy, href: "/profile" }
+        { name: "Contests", icon: Swords, href: "/", badge: "Patterns" },
+        { name: "Mission Log", icon: BarChart3, href: "/profile" },
+        { name: "Badges", icon: Trophy, href: "/profile" }
     ];
 
     return (
@@ -61,10 +62,15 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                         <Link key={link.name} href={link.href}>
                             <motion.div
                                 whileHover={{ y: -2 }}
-                                className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2"
+                                className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2 relative group"
                             >
                                 <link.icon className="w-3.5 h-3.5" />
                                 {link.name}
+                                {link.badge && (
+                                    <span className="absolute -top-1 -right-2 px-1 py-0.5 bg-accent-blue/20 text-accent-blue text-[8px] rounded border border-accent-blue/30 scale-75 group-hover:scale-100 transition-transform">
+                                        {link.badge}
+                                    </span>
+                                )}
                             </motion.div>
                         </Link>
                     ))}
@@ -91,7 +97,7 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                         <div className="hidden sm:flex flex-col items-end">
                             <div className="flex items-center gap-1.5">
                                 <span className="text-sm font-syne font-heavy text-white leading-none">{solvedCount}</span>
-                                <span className="text-muted text-[10px] uppercase">Solved</span>
+                                <span className="text-muted text-[10px] uppercase font-bold">Solved</span>
                             </div>
                             <div className="h-1 w-24 bg-border rounded-full mt-1.5 overflow-hidden">
                                 <motion.div
