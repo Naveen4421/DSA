@@ -9,8 +9,8 @@ const ActivityHeatmap = ({ doneData }) => {
         const result = [];
         const today = new Date();
 
-        // Start from 12 weeks ago
-        for (let i = 11; i >= 0; i--) {
+        // Start from 52 weeks ago
+        for (let i = 51; i >= 0; i--) {
             const week = [];
             for (let j = 0; j < 7; j++) {
                 const date = new Date(today);

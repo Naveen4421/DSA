@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { TOPICS } from '@/lib/data';
+import ActivityHeatmap from '@/components/ActivityHeatmap';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -17,6 +18,7 @@ export default function ProfilePage() {
     const [user, setUser] = useState(null);
     const [done] = useLocalStorage('dsa_done', {});
     const [isLoaded, setIsLoaded] = useState(false);
+    const [timeFrame, setTimeFrame] = useState('14D'); // '14D' or '1Y'
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -44,11 +46,22 @@ export default function ProfilePage() {
 
         const labels = [];
         const seriesData = [];
-        for (let i = 14; i >= 0; i--) {
+        const range = timeFrame === '1Y' ? 365 : 14;
+
+        for (let i = range; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
             const dateStr = d.toLocaleDateString();
-            labels.push(d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
+
+            if (timeFrame === '1Y') {
+                if (d.getDate() === 1) {
+                    labels.push(d.toLocaleDateString('en-US', { month: 'short' }));
+                } else {
+                    labels.push("");
+                }
+            } else {
+                labels.push(d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
+            }
             seriesData.push(dailyCounts[dateStr] || 0);
         }
 
@@ -76,7 +89,7 @@ export default function ProfilePage() {
         });
 
         return { labels, seriesData, activeDays, streak, level, xp, nextLevelXp, topicMastery };
-    }, [done]);
+    }, [done, timeFrame]);
 
     const radarOptions = {
         chart: { toolbar: { show: false }, background: 'transparent' },
@@ -290,15 +303,40 @@ export default function ProfilePage() {
                                 <p className="text-[10px] text-muted font-bold uppercase tracking-wider">Recent Problem Solving Momentum</p>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            {['14D'].map(t => (
-                                <span key={t} className="px-3 py-1 bg-accent-blue/10 border border-accent-blue/20 text-accent-blue rounded-lg text-xs font-bold">{t}</span>
+                        <div className="flex gap-2 bg-white/5 p-1 rounded-xl border border-white/5">
+                            {['14D', '1Y'].map(t => (
+                                <button
+                                    key={t}
+                                    onClick={() => setTimeFrame(t)}
+                                    className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all ${timeFrame === t
+                                            ? 'bg-accent-blue text-white shadow-lg shadow-accent-blue/20'
+                                            : 'text-muted hover:text-white'
+                                        }`}
+                                >
+                                    {t}
+                                </button>
                             ))}
                         </div>
                     </div>
 
-                    <div className="h-80 w-full">
-                        <Chart options={areaOptions} series={[{ name: 'Questions Solved', data: stats.seriesData }]} type="area" height="100%" />
+                    <div className="h-80 w-full mb-12">
+                        <Chart
+                            key={timeFrame}
+                            options={{
+                                ...areaOptions,
+                                xaxis: {
+                                    ...areaOptions.xaxis,
+                                    categories: stats.labels
+                                }
+                            }}
+                            series={[{ name: 'Questions Solved', data: stats.seriesData }]}
+                            type="area"
+                            height="100%"
+                        />
+                    </div>
+
+                    <div className="pt-8 border-t border-white/5">
+                        <ActivityHeatmap doneData={done} />
                     </div>
                 </section>
 
