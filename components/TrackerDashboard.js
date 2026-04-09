@@ -251,6 +251,7 @@ export default function TrackerDashboard() {
                 onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 onOpenBadges={() => setIsBadgeShowcaseOpen(true)}
                 onShowProblems={() => setViewMode('table')}
+                onShowExplore={() => setViewMode('list')}
             />
 
             <main className="max-w-6xl mx-auto px-4 mt-12">

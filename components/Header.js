@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Header({ user, solvedCount, totalCount, streak, onLogout, onToggleTheme, theme, onOpenBadges, onShowProblems }) {
+export default function Header({ user, solvedCount, totalCount, streak, onLogout, onToggleTheme, theme, onOpenBadges, onShowProblems, onShowExplore }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const menuRef = useRef(null);
@@ -60,24 +60,26 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                 <nav className="hidden lg:flex items-center gap-1">
                     {navLinks.map((link) => (
                         <div key={link.name} className="flex">
-                            {link.name === "Badges" ? (
-                                <motion.div
-                                    whileHover={{ y: -2 }}
-                                    onClick={onOpenBadges}
-                                    className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2 relative group"
-                                >
-                                    <link.icon className="w-3.5 h-3.5" />
-                                    {link.name}
-                                </motion.div>
+                            {link.name === "Explore" ? (
+                                <Link href="/" onClick={onShowExplore}>
+                                    <motion.div
+                                        whileHover={{ y: -2 }}
+                                        className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2 relative group"
+                                    >
+                                        <link.icon className="w-3.5 h-3.5" />
+                                        {link.name}
+                                    </motion.div>
+                                </Link>
                             ) : link.name === "Problems" ? (
-                                <motion.div
-                                    whileHover={{ y: -2 }}
-                                    onClick={onShowProblems}
-                                    className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2 relative group"
-                                >
-                                    <link.icon className="w-3.5 h-3.5" />
-                                    {link.name}
-                                </motion.div>
+                                <Link href="/" onClick={onShowProblems}>
+                                    <motion.div
+                                        whileHover={{ y: -2 }}
+                                        className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2 relative group"
+                                    >
+                                        <link.icon className="w-3.5 h-3.5" />
+                                        {link.name}
+                                    </motion.div>
+                                </Link>
                             ) : (
                                 <Link href={link.href}>
                                     <motion.div
