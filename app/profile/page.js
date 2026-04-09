@@ -6,7 +6,8 @@ import { supabase } from '@/lib/supabase/client';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import {
     ChevronLeft, Trophy, Calendar, Zap, Activity, Shield,
-    Target, Award, Star, Flame, Map, Hexagon, Code, Rocket
+    Target, Award, Star, Flame, Map, Hexagon, Code, Rocket,
+    X, CheckCircle, Lock
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { TOPICS } from '@/lib/data';
@@ -14,11 +15,58 @@ import ActivityHeatmap from '@/components/ActivityHeatmap';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
+// Badge Details & Logic
+const BADGES = [
+    {
+        id: 'apex',
+        name: 'Apex Predator',
+        color: 'text-accent-red',
+        requirement: 'Solve 50+ Hard difficulty challenges.',
+        check: (done) => false // Placeholder for complex logic
+    },
+    {
+        id: 'sliding',
+        name: 'Sliding King',
+        color: 'text-accent-green',
+        requirement: 'Master all Sliding Window pattern questions.',
+        check: (done) => false
+    },
+    {
+        id: 'dp',
+        name: 'DP Specialist',
+        color: 'text-accent-purple',
+        requirement: 'Solve 20+ Dynamic Programming challenges.',
+        check: (done) => false
+    },
+    {
+        id: 'array',
+        name: 'Array Master',
+        color: 'text-accent-blue',
+        requirement: 'Complete all questions in the Arrays & Strings foundation.',
+        check: (done) => false
+    },
+    {
+        id: 'early',
+        name: 'Early Bird',
+        color: 'text-accent-yellow',
+        requirement: 'Solve your first problem of the day before 7:00 AM.',
+        check: (done) => false
+    },
+    {
+        id: 'bug',
+        name: 'Bug Hunter',
+        color: 'text-muted',
+        requirement: 'Refactor or update your solutions 10+ times.',
+        check: (done) => false
+    }
+];
+
 export default function ProfilePage() {
     const [user, setUser] = useState(null);
     const [done] = useLocalStorage('dsa_done', {});
     const [isLoaded, setIsLoaded] = useState(false);
-    const [timeFrame, setTimeFrame] = useState('14D'); // '14D' or '1Y'
+    const [timeFrame, setTimeFrame] = useState('14D');
+    const [selectedBadge, setSelectedBadge] = useState(null);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -132,253 +180,187 @@ export default function ProfilePage() {
 
     if (!isLoaded) return null;
 
-    const userEmail = user?.email || "Guest Commander";
-    const userName = userEmail.split('@')[0];
-    const initials = userEmail.substring(0, 2).toUpperCase();
+    const initials = user?.email?.substring(0, 2).toUpperCase() || "GC";
 
     return (
         <div className="min-h-screen bg-[#07090D] text-white selection:bg-accent-blue/30 overflow-x-hidden">
-            {/* Background Effects */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-accent-blue/5 blur-[150px] rounded-full translate-x-1/2 -translate-y-1/2" />
                 <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-accent-purple/5 blur-[120px] rounded-full -translate-x-1/2 translate-y-1/2" />
             </div>
 
             <div className="max-w-[1200px] mx-auto px-6 py-12 relative z-10">
-                {/* Top Navigation */}
                 <div className="flex items-center justify-between mb-16">
                     <Link href="/">
-                        <motion.button
-                            whileHover={{ x: -5 }}
-                            className="group flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl px-5 py-2.5 transition-all"
-                        >
+                        <motion.button whileHover={{ x: -5 }} className="group flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl px-5 py-2.5 transition-all">
                             <ChevronLeft className="w-5 h-5 text-muted group-hover:text-white transition-colors" />
                             <span className="text-xs font-bold uppercase tracking-widest">Dashboard</span>
                         </motion.button>
                     </Link>
-
-                    <div className="flex items-center gap-4">
-                        <div className="text-right hidden sm:block">
-                            <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Status</p>
-                            <p className="text-sm font-syne font-heavy text-accent-green">MISSION ACTIVE</p>
-                        </div>
-                        <div className="h-10 w-[1px] bg-white/10 hidden sm:block" />
-                        <div className="flex items-center gap-2 px-4 py-2 bg-accent-blue/10 border border-accent-blue/20 rounded-2xl">
-                            <Shield className="w-4 h-4 text-accent-blue" />
-                            <span className="text-xs font-heavy tracking-tighter">ELITE COMMANDER</span>
-                        </div>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-accent-blue/10 border border-accent-blue/20 rounded-2xl">
+                        <Shield className="w-4 h-4 text-accent-blue" />
+                        <span className="text-xs font-heavy tracking-tighter">ELITE COMMANDER</span>
                     </div>
                 </div>
 
-                {/* Hero Header */}
                 <header className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8 mb-12">
                     <div className="glass-panel p-10 rounded-[48px] relative overflow-hidden flex flex-col md:flex-row items-center gap-12 border-white/5 shadow-2xl">
-                        <div className="relative">
-                            <div className="w-44 h-44 rounded-[42px] bg-gradient-to-br from-accent-blue via-accent-purple to-accent-orange p-1 shadow-[0_0_50px_rgba(59,130,246,0.2)]">
-                                <div className="w-full h-full bg-[#07090D] rounded-[40px] flex items-center justify-center overflow-hidden">
-                                    {user?.user_metadata?.avatar_url ? (
-                                        <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-5xl font-syne font-black bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent">{initials}</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="absolute -bottom-4 -right-4 w-14 h-14 bg-[#07090D] border-4 border-[#12151A] rounded-2xl flex items-center justify-center shadow-xl">
-                                <Trophy className="w-7 h-7 text-accent-yellow fill-accent-yellow/20" />
+                        <div className="w-44 h-44 rounded-[42px] bg-gradient-to-br from-accent-blue via-accent-purple to-accent-orange p-1">
+                            <div className="w-full h-full bg-[#07090D] rounded-[40px] flex items-center justify-center overflow-hidden">
+                                <span className="text-5xl font-syne font-black bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent">{initials}</span>
                             </div>
                         </div>
-
                         <div className="flex-1 text-center md:text-left">
-                            <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
-                                <h1 className="text-5xl font-syne font-black tracking-tighter">{userName}</h1>
-                                <div className="bg-white/5 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
-                                    <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Level {stats.level}</span>
-                                </div>
-                            </div>
-                            <p className="text-muted text-lg mb-8 leading-relaxed max-w-lg">Mastering algorithms and building advanced mental models for problem solving.</p>
-
-                            {/* XP Bar */}
+                            <h1 className="text-5xl font-syne font-black tracking-tighter mb-4">{user?.email?.split('@')[0]}</h1>
                             <div className="w-full max-w-md">
-                                <div className="flex justify-between items-end mb-3">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent-blue">Experience Points</span>
-                                    <span className="text-xs font-jetbrains font-bold">{stats.xp} / {stats.nextLevelXp} XP</span>
+                                <div className="flex justify-between items-end mb-3 font-jetbrains font-bold uppercase text-[10px]">
+                                    <span className="text-accent-blue">Experience</span>
+                                    <span>{stats.xp} / 100 XP</span>
                                 </div>
-                                <div className="h-3 w-full bg-white/5 rounded-full border border-white/5 p-[2px] overflow-hidden">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${(stats.xp / stats.nextLevelXp) * 100}%` }}
-                                        className="h-full bg-gradient-to-r from-accent-blue to-accent-purple rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]"
-                                    />
+                                <div className="h-3 w-full bg-white/5 rounded-full border border-white/5 p-[2px]">
+                                    <motion.div initial={{ width: 0 }} animate={{ width: `${stats.xp}%` }} className="h-full bg-gradient-to-r from-accent-blue to-accent-purple rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="glass-panel p-8 rounded-[40px] flex flex-col justify-between border-white/5">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-12 h-12 bg-accent-orange/10 rounded-2xl flex items-center justify-center border border-accent-orange/20">
-                                <Flame className="w-6 h-6 text-accent-orange fill-accent-orange/20" />
-                            </div>
-                            <div>
-                                <h4 className="font-syne font-bold text-lg leading-none mb-1">Performance Streak</h4>
-                                <p className="text-[10px] text-muted font-bold uppercase tracking-wider">Uninterrupted Mastery</p>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col items-center">
-                            <span className="text-7xl font-syne font-black text-white leading-none tracking-tighter mb-2">{stats.streak}</span>
-                            <span className="text-xs font-bold uppercase tracking-[0.3em] text-accent-orange">Days Active</span>
-                        </div>
-
-                        <div className="mt-8 pt-8 border-t border-white/5 text-center">
-                            <p className="text-[10px] text-muted italic leading-relaxed">"Consistency is the silent catalyst of greatness."</p>
-                        </div>
+                    <div className="glass-panel p-8 rounded-[40px] flex flex-col items-center justify-center border-white/5">
+                        <Flame className="w-8 h-8 text-accent-orange mb-4" />
+                        <span className="text-7xl font-syne font-black mb-2">{stats.streak}</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.3em] text-accent-orange">Day Streak</span>
                     </div>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-                    {/* Mastery Radar */}
                     <div className="lg:col-span-2 glass-panel p-10 rounded-[48px] border-white/5">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-accent-blue/10 rounded-2xl flex items-center justify-center border border-accent-blue/20">
-                                    <Hexagon className="w-6 h-6 text-accent-blue fill-accent-blue/20" />
-                                </div>
-                                <div>
-                                    <h3 className="font-syne font-bold text-xl leading-none mb-1">Mastery Spectrum</h3>
-                                    <p className="text-[10px] text-muted font-bold uppercase tracking-wider">Skill Distribution Analysis</p>
-                                </div>
-                            </div>
-                            <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/5">
-                                <div className="w-2 h-2 rounded-full bg-accent-blue" />
-                                <span className="text-[10px] font-bold uppercase">Topic-wise %</span>
-                            </div>
-                        </div>
-
+                        <h3 className="font-syne font-bold text-xl mb-8">Mastery Spectrum</h3>
                         <div className="h-[400px] w-full">
                             <Chart options={radarOptions} series={[{ name: 'Mastery', data: stats.topicMastery.map(t => t.value) }]} type="radar" height="100%" />
                         </div>
                     </div>
 
-                    {/* Stats List */}
                     <div className="flex flex-col gap-6">
                         {[
-                            { label: 'Total Challenges', val: Object.keys(done).length, icon: Target, color: 'text-accent-blue' },
-                            { label: 'Active Sessions', val: stats.activeDays, icon: Calendar, color: 'text-accent-green' },
-                            { label: 'Pattern Mastery', val: `${Math.round(stats.topicMastery.reduce((a, b) => a + b.value, 0) / (TOPICS.length || 1))}%`, icon: Code, color: 'text-accent-purple' },
-                            { label: 'Current Level', val: stats.level, icon: Rocket, color: 'text-accent-orange' }
+                            { label: 'Total Solved', val: Object.keys(done).length, icon: Target, color: 'text-accent-blue' },
+                            { label: 'Active Days', val: stats.activeDays, icon: Calendar, color: 'text-accent-green' },
+                            { label: 'Power Level', val: stats.level, icon: Rocket, color: 'text-accent-orange' }
                         ].map((stat, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                className="glass-panel p-6 rounded-3xl border-white/5 hover:border-white/10 transition-all group"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 ${stat.color.replace('text', 'bg')}/10 rounded-2xl flex items-center justify-center border ${stat.color.replace('text', 'border')}/20 group-hover:scale-110 transition-transform`}>
-                                            <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] text-muted font-bold uppercase tracking-widest leading-none mb-1">{stat.label}</p>
-                                            <p className="font-syne font-heavy text-2xl leading-none">{stat.val}</p>
-                                        </div>
+                            <div key={i} className="glass-panel p-6 rounded-3xl border-white/5">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-12 h-12 ${stat.color.replace('text', 'bg')}/10 rounded-2xl flex items-center justify-center border ${stat.color.replace('text', 'border')}/20`}>
+                                        <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">{stat.label}</p>
+                                        <p className="font-syne font-heavy text-2xl">{stat.val}</p>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
                 </div>
 
-                {/* Activity Graph */}
                 <section className="glass-panel p-10 rounded-[48px] mb-12 border-white/5">
                     <div className="flex items-center justify-between mb-12">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-accent-purple/10 rounded-2xl flex items-center justify-center border border-accent-purple/20">
-                                <Activity className="w-6 h-6 text-accent-purple" />
-                            </div>
-                            <div>
-                                <h3 className="font-syne font-bold text-xl leading-none mb-1">Neural Activity Flow</h3>
-                                <p className="text-[10px] text-muted font-bold uppercase tracking-wider">Recent Problem Solving Momentum</p>
-                            </div>
-                        </div>
+                        <h3 className="font-syne font-bold text-xl">Neural Activity Flow</h3>
                         <div className="flex gap-2 bg-white/5 p-1 rounded-xl border border-white/5">
                             {['14D', '1Y'].map(t => (
-                                <button
-                                    key={t}
-                                    onClick={() => setTimeFrame(t)}
-                                    className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all ${timeFrame === t
-                                            ? 'bg-accent-blue text-white shadow-lg shadow-accent-blue/20'
-                                            : 'text-muted hover:text-white'
-                                        }`}
-                                >
+                                <button key={t} onClick={() => setTimeFrame(t)} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all ${timeFrame === t ? 'bg-accent-blue text-white shadow-lg shadow-accent-blue/20' : 'text-muted hover:text-white'}`}>
                                     {t}
                                 </button>
                             ))}
                         </div>
                     </div>
-
                     <div className="h-80 w-full mb-12">
-                        <Chart
-                            key={timeFrame}
-                            options={{
-                                ...areaOptions,
-                                xaxis: {
-                                    ...areaOptions.xaxis,
-                                    categories: stats.labels
-                                }
-                            }}
-                            series={[{ name: 'Questions Solved', data: stats.seriesData }]}
-                            type="area"
-                            height="100%"
-                        />
+                        <Chart key={timeFrame} options={{ ...areaOptions, xaxis: { ...areaOptions.xaxis, categories: stats.labels } }} series={[{ name: 'Solved', data: stats.seriesData }]} type="area" height="100%" />
                     </div>
-
                     <div className="pt-8 border-t border-white/5">
                         <ActivityHeatmap doneData={done} />
                     </div>
                 </section>
 
-                {/* Achievements Preview */}
                 <section className="glass-panel p-10 rounded-[48px] border-white/5">
-                    <div className="flex items-center gap-4 mb-10">
-                        <div className="w-12 h-12 bg-accent-yellow/10 rounded-2xl flex items-center justify-center border border-accent-yellow/20">
-                            <Award className="w-6 h-6 text-accent-yellow fill-accent-yellow/20" />
-                        </div>
-                        <div>
-                            <h3 className="font-syne font-bold text-xl leading-none mb-1">Decorations & Badges</h3>
-                            <p className="text-[10px] text-muted font-bold uppercase tracking-wider">Medals of Honor</p>
-                        </div>
-                    </div>
-
+                    <h3 className="font-syne font-bold text-xl mb-10">Decorations & Badges</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                        {[
-                            { name: 'Apex Predator', color: 'text-accent-red' },
-                            { name: 'Sliding King', color: 'text-accent-green' },
-                            { name: 'DP Specialist', color: 'text-accent-purple' },
-                            { name: 'Array Master', color: 'text-accent-blue' },
-                            { name: 'Early Bird', color: 'text-accent-yellow' },
-                            { name: 'Bug Hunter', color: 'text-muted' }
-                        ].map((badge, i) => (
-                            <div key={i} className="flex flex-col items-center text-center group">
-                                <div className={`w-20 h-20 bg-white/5 border border-white/5 rounded-[24px] flex items-center justify-center mb-4 group-hover:bg-white/10 group-hover:-translate-y-2 transition-all cursor-help`}>
+                        {BADGES.map((badge, i) => (
+                            <motion.div
+                                key={i}
+                                onClick={() => setSelectedBadge(badge)}
+                                whileHover={{ scale: 1.05 }}
+                                className="flex flex-col items-center text-center group cursor-pointer"
+                            >
+                                <div className="w-20 h-20 bg-white/5 border border-white/5 rounded-[24px] flex items-center justify-center mb-4 group-hover:bg-white/10 transition-all">
                                     <Star className={`w-10 h-10 ${badge.color} fill-current opacity-40`} />
                                 </div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted group-hover:text-white transition-colors">{badge.name}</span>
-                            </div>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted group-hover:text-white">{badge.name}</span>
+                            </motion.div>
                         ))}
                     </div>
                 </section>
             </div>
 
+            {/* Badge Detail Modal */}
+            <AnimatePresence>
+                {selectedBadge && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSelectedBadge(null)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="relative w-full max-w-md bg-[#0F1217] border border-white/10 rounded-[42px] overflow-hidden shadow-2xl"
+                        >
+                            <div className="p-10 flex flex-col items-center text-center">
+                                <div className={`w-24 h-24 rounded-[32px] bg-white/5 flex items-center justify-center mb-8 border border-white/5 shadow-inner`}>
+                                    <Star className={`w-12 h-12 ${selectedBadge.color} fill-current shadow-lg`} />
+                                </div>
+
+                                <h2 className="text-3xl font-syne font-black mb-2">{selectedBadge.name}</h2>
+                                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted mb-8 italic">Decoration of Honor</p>
+
+                                <div className="w-full bg-white/5 border border-white/5 rounded-3xl p-6 mb-8 text-left">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <Target className="w-4 h-4 text-accent-blue" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-accent-blue">Mission Objective</span>
+                                    </div>
+                                    <p className="text-sm text-white/80 leading-relaxed font-medium">
+                                        {selectedBadge.requirement}
+                                    </p>
+                                </div>
+
+                                <div className="w-full flex gap-3">
+                                    <button
+                                        onClick={() => setSelectedBadge(null)}
+                                        className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-4 rounded-2xl border border-white/5 transition-all text-xs uppercase tracking-widest"
+                                    >
+                                        Dismiss
+                                    </button>
+                                    <button className="flex-1 bg-accent-blue text-white font-bold py-4 rounded-2xl shadow-lg shadow-accent-blue/20 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2">
+                                        <Lock className="w-3.5 h-3.5" />
+                                        Locked
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setSelectedBadge(null)}
+                                className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/5 text-muted transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
             <style jsx global>{`
-                .glass-panel {
-                    background: rgba(18, 21, 26, 0.4);
-                    backdrop-filter: blur(24px);
-                    border: 1px solid rgba(255, 255, 255, 0.03);
-                }
-                .glow-blue { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+                .glass-panel { background: rgba(18, 21, 26, 0.4); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.03); }
                 .font-heavy { font-weight: 900; }
             `}</style>
         </div>
