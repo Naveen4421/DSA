@@ -1,8 +1,9 @@
 "use client";
 import React, { useState } from 'react';
-import { ChevronDown, ExternalLink, Check, Star as StarIcon, Timer, MessageSquare, Code, Lightbulb } from 'lucide-react';
+import { ChevronDown, ExternalLink, Check, Star as StarIcon, Timer, MessageSquare, Code, Lightbulb, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getHints } from '@/lib/hints';
+import CodePlayground from '@/components/CodePlayground';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -113,7 +114,7 @@ export default function TopicCard({ topic, done, notes, stars, solutions, onTogg
 
 function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, onToggleStar, onUpdateNote, onUpdateSolution }) {
     const [isExtraOpen, setIsExtraOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState('notes'); // 'notes', 'solution', or 'hints'
+    const [activeTab, setActiveTab] = useState('notes'); // 'notes', 'solution', 'hints', or 'playground'
     const hints = getHints(problem.id);
 
     const getDiffClass = (diff) => {
@@ -208,6 +209,20 @@ function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, 
                         <Lightbulb className="w-4 h-4" />
                     </button>
 
+                    <button
+                        onClick={() => {
+                            if (isExtraOpen && activeTab === 'playground') {
+                                setIsExtraOpen(false);
+                            } else {
+                                setIsExtraOpen(true);
+                                setActiveTab('playground');
+                            }
+                        }}
+                        className={cn("p-1.5 rounded-lg transition-colors text-muted hover:bg-background hover:text-accent-blue")}
+                    >
+                        <Terminal className="w-4 h-4" />
+                    </button>
+
                     <a
                         href={problem.url}
                         target="_blank"
@@ -229,7 +244,7 @@ function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, 
                     >
                         <div className="pl-10">
                             <div className="flex items-center gap-1 mb-4 border-b border-border/50">
-                                {['notes', 'solution', 'hints'].map(tab => (
+                                {['notes', 'solution', 'hints', 'playground'].map(tab => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
@@ -299,6 +314,10 @@ function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, 
                                         ))}
                                     </div>
                                 </div>
+                            )}
+
+                            {activeTab === 'playground' && (
+                                <CodePlayground />
                             )}
                         </div>
                     </motion.div>
