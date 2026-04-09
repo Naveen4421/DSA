@@ -32,7 +32,6 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
 
     const navLinks = [
         { name: "Explore", icon: LayoutGrid, href: "/" },
-        { name: "Problems", icon: Brain, href: "/" },
         { name: "Contests", icon: Swords, href: "/", badge: "Patterns" },
         { name: "Mission Log", icon: BarChart3, href: "/profile" },
         { name: "Badges", icon: Trophy, href: "/profile" }
@@ -50,9 +49,11 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                         <Brain className="text-white w-5 h-5" />
                     </motion.div>
                     <div className="hidden xl:block">
-                        <h1 className="font-syne text-base font-extrabold tracking-tight leading-none uppercase">
-                            DSA <span className="text-accent-blue">Astra</span>
-                        </h1>
+                        <Link href="/" onClick={onShowExplore}>
+                            <h1 className="font-syne text-base font-extrabold tracking-tight leading-none uppercase cursor-pointer">
+                                DSA <span className="text-accent-blue">Astra</span>
+                            </h1>
+                        </Link>
                     </div>
                 </div>
 
@@ -70,16 +71,15 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                                         {link.name}
                                     </motion.div>
                                 </Link>
-                            ) : link.name === "Problems" ? (
-                                <Link href="/" onClick={onShowProblems}>
-                                    <motion.div
-                                        whileHover={{ y: -2 }}
-                                        className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2 relative group"
-                                    >
-                                        <link.icon className="w-3.5 h-3.5" />
-                                        {link.name}
-                                    </motion.div>
-                                </Link>
+                            ) : link.name === "Badges" ? (
+                                <motion.div
+                                    whileHover={{ y: -2 }}
+                                    onClick={onOpenBadges}
+                                    className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2 relative group"
+                                >
+                                    <link.icon className="w-3.5 h-3.5" />
+                                    {link.name}
+                                </motion.div>
                             ) : (
                                 <Link href={link.href}>
                                     <motion.div
@@ -98,6 +98,7 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                             )}
                         </div>
                     ))}
+                    {/* Ghost Problems Trigger for Dev testing if needed, though hidden per user request */}
                 </nav>
 
                 {/* Search Bar (LeetCode Style) */}
