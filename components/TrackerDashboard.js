@@ -9,6 +9,7 @@ import AnalyticsHUD from '@/components/AnalyticsHUD';
 import ActivityHeatmap from '@/components/ActivityHeatmap';
 import AchievementHUD from '@/components/AchievementHUD';
 import RisingStarCertificate from '@/components/RisingStarCertificate';
+import BadgeShowcase from '@/components/BadgeShowcase';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Search, Sparkles, Filter, LayoutGrid, List, Star as StarIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +19,7 @@ export default function TrackerDashboard() {
     const [user, setUser] = useState(null);
     const [authError, setAuthError] = useState(null);
     const [isCertificateOpen, setIsCertificateOpen] = useState(false);
+    const [isBadgeShowcaseOpen, setIsBadgeShowcaseOpen] = useState(false);
 
     const [done, setDone] = useLocalStorage('dsa_done', {});
     const [notes, setNotes] = useLocalStorage('dsa_notes', {});
@@ -238,7 +240,16 @@ export default function TrackerDashboard() {
         <div className="min-h-screen pb-20 selection:bg-accent-blue selection:text-white">
             <AnimatePresence>{!user && <LoginOverlay onLogin={handleLogin} isCloudEnabled={true} error={authError} />}</AnimatePresence>
 
-            <Header user={user} solvedCount={solvedCount} totalCount={totalCount} streak={7} theme={theme} onLogout={handleLogout} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
+            <Header
+                user={user}
+                solvedCount={solvedCount}
+                totalCount={totalCount}
+                streak={7}
+                theme={theme}
+                onLogout={handleLogout}
+                onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                onOpenBadges={() => setIsBadgeShowcaseOpen(true)}
+            />
 
             <main className="max-w-6xl mx-auto px-4 mt-12">
 
@@ -357,6 +368,11 @@ export default function TrackerDashboard() {
                 onClose={() => setIsCertificateOpen(false)}
                 userName={user?.email ? user.email.split('@')[0].replace(/[^a-zA-Z0-9 ]/g, ' ') : "Elite Champion"}
                 date={new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+            />
+
+            <BadgeShowcase
+                isOpen={isBadgeShowcaseOpen}
+                onClose={() => setIsBadgeShowcaseOpen(false)}
             />
 
             {/* Floating Decorative Elements */}

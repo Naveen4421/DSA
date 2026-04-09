@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Header({ user, solvedCount, totalCount, streak, onLogout, onToggleTheme, theme }) {
+export default function Header({ user, solvedCount, totalCount, streak, onLogout, onToggleTheme, theme, onOpenBadges }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const menuRef = useRef(null);
@@ -59,20 +59,33 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                 {/* Product Navigation (LeetCode Style) */}
                 <nav className="hidden lg:flex items-center gap-1">
                     {navLinks.map((link) => (
-                        <Link key={link.name} href={link.href}>
-                            <motion.div
-                                whileHover={{ y: -2 }}
-                                className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2 relative group"
-                            >
-                                <link.icon className="w-3.5 h-3.5" />
-                                {link.name}
-                                {link.badge && (
-                                    <span className="absolute -top-1 -right-2 px-1 py-0.5 bg-accent-blue/20 text-accent-blue text-[8px] rounded border border-accent-blue/30 scale-75 group-hover:scale-100 transition-transform">
-                                        {link.badge}
-                                    </span>
-                                )}
-                            </motion.div>
-                        </Link>
+                        <div key={link.name} className="flex">
+                            {link.name === "Badges" ? (
+                                <motion.div
+                                    whileHover={{ y: -2 }}
+                                    onClick={onOpenBadges}
+                                    className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2 relative group"
+                                >
+                                    <link.icon className="w-3.5 h-3.5" />
+                                    {link.name}
+                                </motion.div>
+                            ) : (
+                                <Link href={link.href}>
+                                    <motion.div
+                                        whileHover={{ y: -2 }}
+                                        className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2 relative group"
+                                    >
+                                        <link.icon className="w-3.5 h-3.5" />
+                                        {link.name}
+                                        {link.badge && (
+                                            <span className="absolute -top-1 -right-2 px-1 py-0.5 bg-accent-blue/20 text-accent-blue text-[8px] rounded border border-accent-blue/30 scale-75 group-hover:scale-100 transition-transform">
+                                                {link.badge}
+                                            </span>
+                                        )}
+                                    </motion.div>
+                                </Link>
+                            )}
+                        </div>
                     ))}
                 </nav>
 
