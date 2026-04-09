@@ -1,11 +1,24 @@
 "use client";
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Brain, LogOut, Moon, Sun, Flame, User, Bell, Share2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Brain, LogOut, Moon, Sun, Flame, User, Bell, Share2, Settings, ExternalLink, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header({ user, solvedCount, totalCount, streak, onLogout, onToggleTheme, theme }) {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const menuRef = useRef(null);
     const progress = totalCount > 0 ? Math.round((solvedCount / totalCount) * 100) : 0;
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setIsMenuOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     // Get user initials or avatar
     const avatarUrl = user?.user_metadata?.avatar_url;
@@ -84,9 +97,12 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-2 p-1.5 bg-surface border border-border rounded-2xl">
-                            <Link href="/profile" className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-xl bg-accent-blue/10 flex items-center justify-center border border-accent-blue/20 overflow-hidden group/avatar cursor-pointer">
+                        <div className="relative" ref={menuRef}>
+                            <div
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="flex items-center gap-2 p-1.5 bg-surface border border-border rounded-2xl cursor-pointer hover:border-accent-blue/50 transition-all select-none group"
+                            >
+                                <div className="w-8 h-8 rounded-xl bg-accent-blue/10 flex items-center justify-center border border-accent-blue/20 overflow-hidden group/avatar">
                                     {avatarUrl ? (
                                         <img
                                             src={avatarUrl}
@@ -98,21 +114,77 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                                     )}
                                 </div>
 
-                                <div className="hidden sm:flex flex-col mr-2 cursor-pointer">
+                                <div className="hidden sm:flex flex-col mr-1">
                                     <span className="text-[10px] font-bold uppercase tracking-tight text-white leading-tight truncate max-w-[80px]">
                                         {userEmail.split('@')[0]}
                                     </span>
                                     <span className="text-[9px] font-medium text-accent-blue/80 leading-tight">Commander</span>
                                 </div>
-                            </Link>
 
-                            <button
-                                onClick={onLogout}
-                                className="p-2 text-muted hover:text-accent-red hover:bg-accent-red/10 rounded-lg transition-all group/logout"
-                                title="Logout"
-                            >
-                                <LogOut className="w-4 h-4 group-hover/logout:translate-x-1 transition-transform" />
-                            </button>
+                                <ChevronDown className={`w-3.5 h-3.5 text-muted transition-transform duration-300 ${isMenuOpen ? 'rotate-180' : ''}`} />
+                            </div>
+
+                            <AnimatePresence>
+                                {isMenuOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        className="absolute top-full right-0 mt-3 w-64 bg-[#0F1217] border border-white/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl"
+                                    >
+                                        <div className="p-4 border-b border-white/5 bg-accent-blue/5">
+                                            <p className="text-[10px] font-bold text-accent-blue uppercase tracking-widest mb-1">Authenticated As</p>
+                                            <p className="text-xs font-medium text-white/70 truncate">{userEmail}</p>
+                                        </div>
+
+                                        <div className="p-2">
+                                            <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
+                                                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all group">
+                                                    <div className="w-8 h-8 rounded-lg bg-accent-blue/10 flex items-center justify-center border border-accent-blue/20">
+                                                        <User className="w-4 h-4 text-accent-blue" />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <p className="text-xs font-bold text-white group-hover:text-accent-blue transition-colors">View Profile</p>
+                                                        <p className="text-[9px] text-muted">Statistics & Achievements</p>
+                                                    </div>
+                                                    <ExternalLink className="w-3 h-3 text-muted ml-auto opacity-0 group-hover:opacity-100 transition-all" />
+                                                </button>
+                                            </Link>
+
+                                            <button
+                                                onClick={() => {
+                                                    setIsMenuOpen(false);
+                                                    alert("Edit Profile mode coming soon to Astra Mission Control! 🚀");
+                                                }}
+                                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all group"
+                                            >
+                                                <div className="w-8 h-8 rounded-lg bg-accent-purple/10 flex items-center justify-center border border-accent-purple/20">
+                                                    <Settings className="w-4 h-4 text-accent-purple" />
+                                                </div>
+                                                <div className="text-left">
+                                                    <p className="text-xs font-bold text-white group-hover:text-accent-purple transition-colors">Edit Profile</p>
+                                                    <p className="text-[9px] text-muted">Personalize your identity</p>
+                                                </div>
+                                            </button>
+                                        </div>
+
+                                        <div className="p-2 border-t border-white/5">
+                                            <button
+                                                onClick={() => { setIsMenuOpen(false); onLogout(); }}
+                                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-accent-red/10 transition-all group"
+                                            >
+                                                <div className="w-8 h-8 rounded-lg bg-accent-red/10 flex items-center justify-center border border-accent-red/20">
+                                                    <LogOut className="w-4 h-4 text-accent-red" />
+                                                </div>
+                                                <div className="text-left">
+                                                    <p className="text-xs font-bold text-accent-red">System Logout</p>
+                                                    <p className="text-[9px] text-accent-red/50">End current session</p>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
                 </div>
