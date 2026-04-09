@@ -1,87 +1,95 @@
 "use client";
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Circle, Star, ExternalLink, Code2, Lightbulb, Terminal } from 'lucide-react';
+import { CheckCircle2, Circle, Star, ExternalLink, Code2, Lock, Youtube, PlayCircle } from 'lucide-react';
 
 export default function AllProblemsTable({ topics, done, stars, onToggleDone, onToggleStar }) {
     const allProblems = topics.flatMap(t =>
         t.weeks.flatMap(w =>
-            w.problems.map(p => ({ ...p, topicName: t.title }))
+            w.problems.map(p => ({
+                ...p,
+                topicName: t.title,
+                acceptance: (Math.random() * (75 - 45) + 45).toFixed(1) + "%", // Mock acceptance
+            }))
         )
     );
 
     const getDiffColor = (diff) => {
         switch (diff.toLowerCase()) {
-            case 'easy': return 'text-accent-green bg-accent-green/10';
-            case 'medium': return 'text-accent-yellow bg-accent-yellow/10';
-            case 'hard': return 'text-accent-red bg-accent-red/10';
-            default: return 'text-muted bg-white/5';
+            case 'easy': return 'text-[#00af9b]'; // LeetCode Green
+            case 'medium': return 'text-[#ffb800]'; // LeetCode Yellow
+            case 'hard': return 'text-[#ff2d55]'; // LeetCode Red
+            default: return 'text-muted';
         }
     };
 
     return (
-        <section className="bg-surface border border-border rounded-[32px] overflow-hidden">
+        <section className="w-full bg-surface/30 rounded-2xl overflow-hidden border border-border/50">
             <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="border-b border-border bg-white/5">
-                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Status</th>
-                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Title</th>
-                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Pattern</th>
-                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Difficulty</th>
-                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted text-right">Actions</th>
+                <table className="w-full text-left border-separate border-spacing-0">
+                    <thead className="bg-surface/50 border-b border-border">
+                        <tr>
+                            <th className="px-4 py-3 text-[12px] font-medium text-muted/80 border-b border-border w-12 text-center font-inter">Status</th>
+                            <th className="px-4 py-3 text-[12px] font-medium text-muted/80 border-b border-border font-inter">Title</th>
+                            <th className="px-4 py-3 text-[12px] font-medium text-muted/80 border-b border-border font-inter">Solution</th>
+                            <th className="px-4 py-3 text-[12px] font-medium text-muted/80 border-b border-border font-inter">Acceptance</th>
+                            <th className="px-4 py-3 text-[12px] font-medium text-muted/80 border-b border-border font-inter">Difficulty</th>
+                            <th className="px-4 py-3 text-[12px] font-medium text-muted/80 border-b border-border font-inter">Frequency</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-border">
+                    <tbody>
                         {allProblems.map((p, i) => (
                             <motion.tr
                                 key={p.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.01 }}
-                                className="group hover:bg-white/5 transition-colors"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: i * 0.005 }}
+                                className={`group hover:bg-[#282828]/50 transition-colors ${i % 2 === 0 ? 'bg-transparent' : 'bg-surface/10'}`}
                             >
-                                <td className="px-6 py-4">
+                                <td className="px-4 py-3.5 border-b border-border/30 text-center">
                                     <button
                                         onClick={() => onToggleDone(p.id, p.topicId)}
-                                        className={`transition-all ${done[p.id] ? 'text-accent-green scale-110' : 'text-muted/30 hover:text-muted'}`}
+                                        className={`transition-all ${done[p.id] ? 'text-[#00af9b]' : 'text-muted/20 hover:text-muted/40'}`}
                                     >
-                                        {done[p.id] ? <CheckCircle2 className="w-5 h-5 fill-accent-green/10" /> : <Circle className="w-5 h-5" />}
+                                        <CheckCircle2 className={`w-4 h-4 ${done[p.id] ? 'fill-[#00af9b]/10' : ''}`} />
                                     </button>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex flex-col">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-bold text-white group-hover:text-accent-blue transition-colors cursor-pointer">{p.name}</span>
-                                            {stars[p.id] && <Star className="w-3.5 h-3.5 text-accent-yellow fill-accent-yellow" />}
-                                        </div>
-                                        <span className="text-[9px] text-muted font-bold uppercase tracking-tight">{p.topicName}</span>
+                                <td className="px-4 py-3.5 border-b border-border/30">
+                                    <div className="flex items-center gap-2">
+                                        <a
+                                            href={p.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-[14px] font-medium text-white group-hover:text-accent-blue transition-all line-clamp-1"
+                                        >
+                                            {i + 1}. {p.name}
+                                        </a>
+                                        {stars[p.id] && <Star className="w-3 h-3 text-[#ffb800] fill-[#ffb800]" />}
                                     </div>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <span className="text-xs font-bold text-muted/80">{p.pattern}</span>
+                                <td className="px-4 py-3.5 border-b border-border/30">
+                                    <div className="flex items-center gap-2">
+                                        <Code2 className="w-4 h-4 text-accent-blue/60 group-hover:text-accent-blue cursor-pointer transition-colors" />
+                                        <PlayCircle className="w-4 h-4 text-accent-red/60 group-hover:text-accent-red cursor-pointer transition-colors" />
+                                    </div>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase border border-current opacity-70 ${getDiffColor(p.diff)}`}>
-                                        {p.diff}
+                                <td className="px-4 py-3.5 border-b border-border/30">
+                                    <span className="text-[13px] text-white/90 font-inter">{p.acceptance}</span>
+                                </td>
+                                <td className="px-4 py-3.5 border-b border-border/30">
+                                    <span className={`text-[13px] font-medium font-inter ${getDiffColor(p.diff)}`}>
+                                        {p.diff.charAt(0).toUpperCase() + p.diff.slice(1)}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="p-1.5 rounded-lg hover:bg-white/10 text-muted hover:text-accent-blue transition-all">
-                                            <Code2 className="w-4 h-4" />
-                                        </button>
-                                        <button className="p-1.5 rounded-lg hover:bg-white/10 text-muted hover:text-accent-purple transition-all">
-                                            <Lightbulb className="w-4 h-4" />
-                                        </button>
-                                        <button className="p-1.5 rounded-lg hover:bg-white/10 text-muted hover:text-accent-orange transition-all">
-                                            <Terminal className="w-4 h-4" />
-                                        </button>
-                                        <a href={p.url} target="_blank" rel="noopener noreferrer">
-                                            <button className="p-1.5 rounded-lg hover:bg-white/10 text-muted hover:text-white transition-all">
-                                                <ExternalLink className="w-4 h-4" />
-                                            </button>
-                                        </a>
+                                <td className="px-4 py-3.5 border-b border-border/30">
+                                    <div className="relative group/freq">
+                                        <div className="h-1.5 w-16 bg-border/40 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-accent-blue/40"
+                                                style={{ width: `${Math.random() * 80 + 20}%` }}
+                                            />
+                                        </div>
+                                        <Lock className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 text-muted opacity-0 group-hover/freq:opacity-100 transition-opacity" />
                                     </div>
                                 </td>
                             </motion.tr>
