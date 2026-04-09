@@ -7,7 +7,7 @@ import { TOPICS } from '@/lib/data';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-export default function AnalyticsHUD({ done, totalCount, theme }) {
+export default function AnalyticsHUD({ done, totalCount, theme, onViewCertificates }) {
     const { solvedCount, progress, difficultyStats, solvedToday, solvedThisWeek, solvedDp, topicStats } = React.useMemo(() => {
         const safeDone = done || {};
         const solvedCount = Object.keys(safeDone).length;
@@ -144,17 +144,23 @@ export default function AnalyticsHUD({ done, totalCount, theme }) {
                         Milestone
                     </div>
                     <h4 className="text-2xl font-syne font-extrabold mb-2 leading-tight">
-                        {solvedDp > 5 ? "DP Specialist" : "Rising Star"}
+                        {progress === 100 ? "Zenith Master" : solvedDp > 5 ? "DP Specialist" : "Rising Star"}
                     </h4>
                     <p className="text-white/70 text-xs font-medium leading-relaxed">
-                        {solvedDp > 0
-                            ? `You've conquered ${solvedDp} Dynamic Programming challenges so far. Keep building that intuition!`
-                            : "Start your journey today. Solving your first Dynamic Programming problem will unlock new insights!"}
+                        {progress === 100
+                            ? "You have achieved absolute mastery over all challenges! Your Rising Star certificate is ready."
+                            : solvedDp > 0
+                                ? `You've conquered ${solvedDp} Dynamic Programming challenges so far. Keep building that intuition!`
+                                : "Start your journey today. Solving your first Dynamic Programming problem will unlock new insights!"}
                     </p>
                 </div>
 
-                <button className="mt-8 bg-white text-accent-purple font-bold text-xs uppercase tracking-widest py-3 rounded-xl transition-all hover:shadow-lg active:scale-95">
-                    View Certifications
+                <button
+                    onClick={onViewCertificates}
+                    disabled={progress < 100}
+                    className={`mt-8 bg-white text-accent-purple font-bold text-xs uppercase tracking-widest py-3 rounded-xl transition-all hover:shadow-lg active:scale-95 ${progress < 100 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-zinc-100'}`}
+                >
+                    {progress === 100 ? "Claim Certificate" : "View Certifications"}
                 </button>
             </motion.div>
 

@@ -8,6 +8,7 @@ import LoginOverlay from '@/components/LoginOverlay';
 import AnalyticsHUD from '@/components/AnalyticsHUD';
 import ActivityHeatmap from '@/components/ActivityHeatmap';
 import AchievementHUD from '@/components/AchievementHUD';
+import RisingStarCertificate from '@/components/RisingStarCertificate';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Search, Sparkles, Filter, LayoutGrid, List, Star as StarIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +17,7 @@ import confetti from 'canvas-confetti';
 export default function TrackerDashboard() {
     const [user, setUser] = useState(null);
     const [authError, setAuthError] = useState(null);
+    const [isCertificateOpen, setIsCertificateOpen] = useState(false);
 
     const [done, setDone] = useLocalStorage('dsa_done', {});
     const [notes, setNotes] = useLocalStorage('dsa_notes', {});
@@ -241,10 +243,19 @@ export default function TrackerDashboard() {
             <main className="max-w-6xl mx-auto px-4 mt-12">
 
                 {/* Achievements Section */}
-                <AchievementHUD doneData={done} topics={TOPICS} />
+                <AchievementHUD
+                    doneData={done}
+                    topics={TOPICS}
+                    onViewCertificate={() => setIsCertificateOpen(true)}
+                />
 
                 {/* Analytics Section */}
-                <AnalyticsHUD done={done} totalCount={totalCount} theme={theme} />
+                <AnalyticsHUD
+                    done={done}
+                    totalCount={totalCount}
+                    theme={theme}
+                    onViewCertificates={() => setIsCertificateOpen(true)}
+                />
 
                 {/* Activity Heatmap Section */}
                 <ActivityHeatmap doneData={done} />
@@ -340,6 +351,13 @@ export default function TrackerDashboard() {
                     )}
                 </div>
             </main>
+
+            <RisingStarCertificate
+                isOpen={isCertificateOpen}
+                onClose={() => setIsCertificateOpen(false)}
+                userName={user?.email ? user.email.split('@')[0].replace(/[^a-zA-Z0-9 ]/g, ' ') : "Elite Champion"}
+                date={new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+            />
 
             {/* Floating Decorative Elements */}
             <div className="fixed top-1/4 -left-32 w-64 h-64 bg-accent-blue/5 blur-[120px] rounded-full -z-10 animate-pulse-glow" />

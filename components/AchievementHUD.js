@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Star as StarIcon, Zap, Flame, Target, Award } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Trophy, Star as StarIcon, Zap, Flame, Award } from 'lucide-react';
 
-const AchievementHUD = ({ doneData, topics }) => {
+const AchievementHUD = ({ doneData, topics, onViewCertificate }) => {
     // 1. Calculate Achievements
     const achievements = useMemo(() => {
         const safeDone = doneData || {};
         const solvedCount = Object.keys(safeDone).length;
+        const totalCount = topics.reduce((acc, t) => acc + (t.weeks?.reduce((a, w) => a + (w.problems?.length || 0), 0) || 0), 0);
         const todayStr = new Date().toLocaleDateString();
         const solvedToday = Object.values(safeDone).filter(t => new Date(t).toLocaleDateString() === todayStr).length;
 
@@ -32,10 +33,10 @@ const AchievementHUD = ({ doneData, topics }) => {
             {
                 id: 'marathon',
                 name: 'Code Runner',
-                desc: 'Solve 5 problems in a single day.',
+                desc: 'Solve 5+ problems in a single day.',
                 icon: Flame,
                 color: 'text-orange-500',
-                isUnlocked: solvedCount >= 5
+                isUnlocked: solvedToday >= 5
             },
             {
                 id: 'specialist',
@@ -47,6 +48,15 @@ const AchievementHUD = ({ doneData, topics }) => {
                     const allT = t.weeks?.flatMap(w => w.problems) || [];
                     return allT.length > 0 && allT.every(p => safeDone[p.id]);
                 })
+            },
+            {
+                id: 'rising-star',
+                name: 'Rising Star',
+                desc: 'Complete all questions in the tracker.',
+                icon: StarIcon,
+                color: 'text-amber-500',
+                isUnlocked: solvedCount >= totalCount && totalCount > 0,
+                isCertificate: true
             }
         ];
     }, [doneData, topics]);
@@ -66,20 +76,26 @@ const AchievementHUD = ({ doneData, topics }) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                 {achievements.map((item) => (
                     <motion.div
                         key={item.id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
+                        onClick={() => item.isCertificate && item.isUnlocked && onViewCertificate()}
                         className={`group relative p-4 rounded-2xl border transition-all duration-500 overflow-hidden ${item.isUnlocked
                             ? 'bg-background-secondary border-white/10 shadow-xl'
                             : 'bg-transparent border-white/5 grayscale pointer-events-none'
-                            }`}
+                            } ${item.isCertificate && item.isUnlocked ? 'cursor-pointer hover:border-amber-500/50' : ''}`}
                     >
                         {/* Shimmer Effect */}
                         {item.isUnlocked && (
                             <div className="absolute inset-0 bg-gradient-to-tr from-accent-blue/0 via-accent-blue/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        )}
+
+                        {/* Special Glow for Certificate */}
+                        {item.isCertificate && item.isUnlocked && (
+                            <div className="absolute inset-0 bg-amber-500/10 animate-pulse" />
                         )}
 
                         <div className="relative z-10">
@@ -88,7 +104,9 @@ const AchievementHUD = ({ doneData, topics }) => {
                                 <item.icon className={`w-5 h-5 ${item.isUnlocked ? item.color : 'text-muted/40'}`} />
                             </div>
                             <h4 className={`font-bold text-sm ${item.isUnlocked ? 'text-white' : 'text-muted'}`}>{item.name}</h4>
-                            <p className="text-[10px] text-muted leading-relaxed mt-1">{item.desc}</p>
+                            <p className="text-[10px] text-muted leading-relaxed mt-1">
+                                {item.isCertificate && item.isUnlocked ? 'Click to claim certificate!' : item.desc}
+                            </p>
                         </div>
                     </motion.div>
                 ))}
