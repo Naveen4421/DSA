@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase/client';
 import { TOPICS } from '@/lib/data';
 import Header from '@/components/Header';
 import TopicCard from '@/components/TopicCard';
+import AllProblemsTable from '@/components/AllProblemsTable';
 import LoginOverlay from '@/components/LoginOverlay';
 import AnalyticsHUD from '@/components/AnalyticsHUD';
 import ActivityHeatmap from '@/components/ActivityHeatmap';
@@ -249,6 +250,7 @@ export default function TrackerDashboard() {
                 onLogout={handleLogout}
                 onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 onOpenBadges={() => setIsBadgeShowcaseOpen(true)}
+                onShowProblems={() => setViewMode('table')}
             />
 
             <main className="max-w-6xl mx-auto px-4 mt-12">
@@ -321,30 +323,49 @@ export default function TrackerDashboard() {
                 </section>
 
                 {/* Topics Content */}
-                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+                <div className="w-full">
                     <AnimatePresence mode='popLayout'>
-                        {filteredTopics.map((topic, i) => (
+                        {viewMode === 'table' ? (
                             <motion.div
-                                layout
-                                key={topic.id}
+                                key="table-view"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                transition={{ duration: 0.4, delay: i * 0.05 }}
+                                exit={{ opacity: 0 }}
                             >
-                                <TopicCard
-                                    topic={topic}
+                                <AllProblemsTable
+                                    topics={TOPICS}
                                     done={done || {}}
-                                    notes={notes || {}}
                                     stars={stars || {}}
-                                    solutions={solutions || {}}
                                     onToggleDone={toggleDone}
                                     onToggleStar={toggleStar}
-                                    onUpdateNote={updateNote}
-                                    onUpdateSolution={updateSolution}
                                 />
                             </motion.div>
-                        ))}
+                        ) : (
+                            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+                                {filteredTopics.map((topic, i) => (
+                                    <motion.div
+                                        layout
+                                        key={topic.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        transition={{ duration: 0.4, delay: i * 0.05 }}
+                                    >
+                                        <TopicCard
+                                            topic={topic}
+                                            done={done || {}}
+                                            notes={notes || {}}
+                                            stars={stars || {}}
+                                            solutions={solutions || {}}
+                                            onToggleDone={toggleDone}
+                                            onToggleStar={toggleStar}
+                                            onUpdateNote={updateNote}
+                                            onUpdateSolution={updateSolution}
+                                        />
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
                     </AnimatePresence>
 
                     {filteredTopics.length === 0 && (
