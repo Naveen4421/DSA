@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from 'react';
-import { ChevronDown, ExternalLink, Check, Star as StarIcon, Timer, MessageSquare, Code } from 'lucide-react';
+import { ChevronDown, ExternalLink, Check, Star as StarIcon, Timer, MessageSquare, Code, Lightbulb } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getHints } from '@/lib/hints';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -112,7 +113,8 @@ export default function TopicCard({ topic, done, notes, stars, solutions, onTogg
 
 function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, onToggleStar, onUpdateNote, onUpdateSolution }) {
     const [isExtraOpen, setIsExtraOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState('notes'); // 'notes' or 'solution'
+    const [activeTab, setActiveTab] = useState('notes'); // 'notes', 'solution', or 'hints'
+    const hints = getHints(problem.id);
 
     const getDiffClass = (diff) => {
         if (diff === 'Easy') return 'bg-accent-green/10 text-accent-green border-accent-green/20';
@@ -165,17 +167,45 @@ function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, 
                     </button>
 
                     <button
-                        onClick={() => { setIsExtraOpen(!isExtraOpen); setActiveTab('notes'); }}
+                        onClick={() => {
+                            if (isExtraOpen && activeTab === 'notes') {
+                                setIsExtraOpen(false);
+                            } else {
+                                setIsExtraOpen(true);
+                                setActiveTab('notes');
+                            }
+                        }}
                         className={cn("p-1.5 rounded-lg transition-colors", note ? "text-accent-blue" : "text-muted hover:bg-background")}
                     >
                         <MessageSquare className="w-4 h-4" />
                     </button>
 
                     <button
-                        onClick={() => { setIsExtraOpen(!isExtraOpen); setActiveTab('solution'); }}
+                        onClick={() => {
+                            if (isExtraOpen && activeTab === 'solution') {
+                                setIsExtraOpen(false);
+                            } else {
+                                setIsExtraOpen(true);
+                                setActiveTab('solution');
+                            }
+                        }}
                         className={cn("p-1.5 rounded-lg transition-colors", solution ? "text-accent-purple" : "text-muted hover:bg-background")}
                     >
                         <Code className="w-4 h-4" />
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            if (isExtraOpen && activeTab === 'hints') {
+                                setIsExtraOpen(false);
+                            } else {
+                                setIsExtraOpen(true);
+                                setActiveTab('hints');
+                            }
+                        }}
+                        className={cn("p-1.5 rounded-lg transition-colors text-muted hover:bg-background hover:text-accent-yellow")}
+                    >
+                        <Lightbulb className="w-4 h-4" />
                     </button>
 
                     <a
@@ -199,7 +229,7 @@ function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, 
                     >
                         <div className="pl-10">
                             <div className="flex items-center gap-1 mb-4 border-b border-border/50">
-                                {['notes', 'solution'].map(tab => (
+                                {['notes', 'solution', 'hints'].map(tab => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
@@ -213,7 +243,7 @@ function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, 
                                 ))}
                             </div>
 
-                            {activeTab === 'notes' ? (
+                            {activeTab === 'notes' && (
                                 <div className="space-y-3">
                                     <textarea
                                         value={note || ""}
@@ -222,7 +252,9 @@ function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, 
                                         className="w-full bg-surface border border-border rounded-xl p-4 text-sm focus:outline-none focus:border-accent-blue transition-all min-h-[120px]"
                                     />
                                 </div>
-                            ) : (
+                            )}
+
+                            {activeTab === 'solution' && (
                                 <div className="space-y-3">
                                     <div className="relative group">
                                         <textarea
@@ -240,6 +272,31 @@ function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, 
                                                 <Code className="w-3.5 h-3.5" />
                                             </button>
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'hints' && (
+                                <div className="space-y-4 pt-2">
+                                    <div className="flex items-center gap-2 text-accent-yellow text-xs font-bold uppercase tracking-widest mb-2">
+                                        <Lightbulb className="w-3.5 h-3.5" />
+                                        Strategic Intelligence
+                                    </div>
+                                    <div className="space-y-3">
+                                        {hints.map((hint, i) => (
+                                            <motion.div
+                                                key={i}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: i * 0.1 }}
+                                                className="flex gap-4 p-4 rounded-xl bg-accent-yellow/5 border border-accent-yellow/10"
+                                            >
+                                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-accent-yellow/20 flex items-center justify-center text-[10px] font-bold text-accent-yellow">
+                                                    {i + 1}
+                                                </span>
+                                                <p className="text-sm text-white/80 leading-relaxed italic">{hint}</p>
+                                            </motion.div>
+                                        ))}
                                     </div>
                                 </div>
                             )}
