@@ -56,7 +56,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/dsa-tracker:latest
 
       - name: Upload security report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: trivy-security-report
           path: trivy-report.json
