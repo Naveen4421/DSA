@@ -46,7 +46,7 @@ jobs:
             --severity HIGH,CRITICAL \
             --format table \
             ${{ secrets.DOCKERHUB_USERNAME }}/dsa-tracker:latest
-        continue-on-error: true
+
 
       - name: Generate security report
         run: |
