@@ -7,7 +7,7 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,3 +32,31 @@ jobs:
             NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # ===== SECURITY ADDITIONS BELOW =====
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Scan Docker image for vulnerabilities
+        run: |
+          trivy image \
+            --exit-code 1 \
+            --severity HIGH,CRITICAL \
+            --format table \
+            ${{ secrets.DOCKERHUB_USERNAME }}/dsa-tracker:latest
+        continue-on-error: true
+
+      - name: Generate security report
+        run: |
+          trivy image \
+            --format json \
+            --output trivy-report.json \
+            ${{ secrets.DOCKERHUB_USERNAME }}/dsa-tracker:latest
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-security-report
+          path: trivy-report.json
