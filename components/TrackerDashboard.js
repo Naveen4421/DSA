@@ -12,9 +12,10 @@ import AchievementHUD from '@/components/AchievementHUD';
 import RisingStarCertificate from '@/components/RisingStarCertificate';
 import BadgeShowcase from '@/components/BadgeShowcase';
 import useLocalStorage from '@/hooks/useLocalStorage';
-import { Search, Sparkles, Filter, LayoutGrid, List, Star as StarIcon } from 'lucide-react';
+import { Search, Sparkles, Filter, LayoutGrid, List, Star as StarIcon, Trophy, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import Leaderboard from '@/components/Leaderboard';
 
 export default function TrackerDashboard() {
     const [user, setUser] = useState(null);
@@ -26,9 +27,13 @@ export default function TrackerDashboard() {
     const [notes, setNotes] = useLocalStorage('dsa_notes', {});
     const [stars, setStars] = useLocalStorage('dsa_stars', {});
     const [solutions, setSolutions] = useLocalStorage('dsa_solutions', {});
+    const [times, setTimes] = useLocalStorage('dsa_times', {});
     const [theme, setTheme] = useLocalStorage('theme', 'dark');
     const [isLoaded, setIsLoaded] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const [dailyProblem, setDailyProblem] = useState(null);
+    const [leaderboardData, setLeaderboardData] = useState([]);
+    const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filterMode, setFilterMode] = useState('all');
@@ -52,8 +57,10 @@ export default function TrackerDashboard() {
                     if (session) {
                         setUser(session.user);
                         loadCloudData(session.user.id);
+                        fetchLeaderboard();
                     }
                     setIsLoaded(true);
+                    pickDailyProblem();
                 }
             });
         } else {
@@ -99,10 +106,42 @@ export default function TrackerDashboard() {
                 if (data.notes_data && Object.keys(data.notes_data).length > Object.keys(notes).length) setNotes(data.notes_data);
                 if (data.stars_data && Object.keys(data.stars_data).length > Object.keys(stars).length) setStars(data.stars_data);
                 if (data.solutions_data && Object.keys(data.solutions_data).length > Object.keys(solutions).length) setSolutions(data.solutions_data);
+                if (data.times_data && Object.keys(data.times_data).length > Object.keys(times).length) setTimes(data.times_data);
             }
         } catch (e) {
             console.error("Cloud fetch failed:", e);
         }
+    };
+
+    const fetchLeaderboard = async () => {
+        if (!supabase) return;
+        try {
+            const { data } = await supabase.from('user_data').select('id, email, done_data, updated_at');
+            if (data) {
+                const processed = data.map(item => ({
+                    id: item.id,
+                    email: item.email || item.id.substring(0, 8),
+                    solved: Object.keys(item.done_data || {}).length,
+                    lastActive: item.updated_at
+                })).sort((a, b) => b.solved - a.solved).slice(0, 10);
+                setLeaderboardData(processed);
+            }
+        } catch (e) {
+            console.error("Leaderboard fetch failed:", e);
+        }
+    };
+
+    const pickDailyProblem = () => {
+        const allProblems = TOPICS.flatMap(t => t.weeks.flatMap(w => w.problems));
+        // Use the current date as seed for daily problem
+        const today = new Date().toDateString();
+        let hash = 0;
+        for (let i = 0; i < today.length; i++) {
+            hash = (hash << 5) - hash + today.charCodeAt(i);
+            hash |= 0;
+        }
+        const index = Math.abs(hash) % allProblems.length;
+        setDailyProblem(allProblems[index]);
     };
 
     const syncToCloud = async (newData, type) => {
@@ -112,7 +151,15 @@ export default function TrackerDashboard() {
         if (type === 'notes') updates.notes_data = newData;
         if (type === 'stars') updates.stars_data = newData;
         if (type === 'solutions') updates.solutions_data = newData;
+        if (type === 'times') updates.times_data = newData;
         await supabase.from('user_data').upsert(updates);
+    };
+
+    const updateTime = (pid, val) => {
+        const newTimes = { ...(times || {}) };
+        newTimes[pid] = val;
+        setTimes(newTimes);
+        syncToCloud(newTimes, 'times');
     };
 
     const handleLogin = async (email, password, mode) => {
@@ -255,6 +302,57 @@ export default function TrackerDashboard() {
 
             <main className="max-w-6xl mx-auto px-4 mt-12">
 
+                {/* Daily Challenge Section */}
+                {dailyProblem && (
+                    <motion.section
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-12"
+                    >
+                        <div className="relative glass-panel p-8 rounded-[32px] border-accent-blue/20 overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-blue/10 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-accent-blue/20 transition-all duration-700" />
+
+                            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                                <div className="space-y-4 flex-1">
+                                    <div className="flex items-center gap-2 text-accent-blue font-bold text-xs uppercase tracking-[0.3em]">
+                                        <Sparkles className="w-4 h-4" />
+                                        Daily Astra Mission
+                                    </div>
+                                    <h2 className="text-4xl font-syne font-heavy tracking-tighter text-white">
+                                        {dailyProblem.name}
+                                    </h2>
+                                    <div className="flex items-center gap-4">
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${dailyProblem.diff === 'Easy' ? 'bg-accent-green/10 text-accent-green border-accent-green/20' : dailyProblem.diff === 'Medium' ? 'bg-accent-yellow/10 text-accent-yellow border-accent-yellow/20' : 'bg-accent-red/10 text-accent-red border-accent-red/20'}`}>
+                                            {dailyProblem.diff}
+                                        </span>
+                                        <span className="text-muted text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                                            <Target className="w-3.5 h-3.5" />
+                                            {dailyProblem.pattern}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={() => window.open(dailyProblem.url, '_blank')}
+                                        className="bg-accent-blue hover:bg-accent-blue/80 text-white font-syne font-bold px-8 py-4 rounded-2xl flex items-center gap-3 transition-all active:scale-95 shadow-xl shadow-accent-blue/20"
+                                    >
+                                        Execute Mission
+                                        <Target className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setIsLeaderboardOpen(true)}
+                                        className="bg-white/5 hover:bg-white/10 text-white border border-white/10 font-syne font-bold px-6 py-4 rounded-2xl flex items-center gap-3 transition-all active:scale-95"
+                                    >
+                                        <Trophy className="w-4 h-4 text-accent-yellow" />
+                                        Leaderboard
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.section>
+                )}
+
                 {/* Achievements Section */}
                 <AchievementHUD
                     doneData={done}
@@ -361,7 +459,10 @@ export default function TrackerDashboard() {
                                             onToggleStar={toggleStar}
                                             onUpdateNote={updateNote}
                                             onUpdateSolution={updateSolution}
+                                            onUpdateTime={updateTime}
+                                            times={times || {}}
                                         />
+
                                     </motion.div>
                                 ))}
                             </div>
@@ -394,6 +495,12 @@ export default function TrackerDashboard() {
             <BadgeShowcase
                 isOpen={isBadgeShowcaseOpen}
                 onClose={() => setIsBadgeShowcaseOpen(false)}
+            />
+
+            <Leaderboard
+                isOpen={isLeaderboardOpen}
+                onClose={() => setIsLeaderboardOpen(false)}
+                data={leaderboardData}
             />
 
             {/* Floating Decorative Elements */}

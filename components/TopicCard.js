@@ -11,7 +11,7 @@ function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 
-export default function TopicCard({ topic, done, notes, stars, solutions, onToggleDone, onToggleStar, onUpdateNote, onUpdateSolution }) {
+export default function TopicCard({ topic, done, notes, stars, solutions, times, onToggleDone, onToggleStar, onUpdateNote, onUpdateSolution, onUpdateTime }) {
     const [isOpen, setIsOpen] = useState(false);
 
     const allProblems = topic.weeks.flatMap(w => w.problems);
@@ -101,6 +101,8 @@ export default function TopicCard({ topic, done, notes, stars, solutions, onTogg
                                         onToggleStar={(e) => onToggleStar(p.id, e)}
                                         onUpdateNote={(val) => onUpdateNote(p.id, val)}
                                         onUpdateSolution={(val) => onUpdateSolution(p.id, val)}
+                                        onUpdateTime={(val) => onUpdateTime(p.id, val)}
+                                        savedTime={times?.[p.id]}
                                     />
                                 ))}
                             </div>
@@ -112,10 +114,33 @@ export default function TopicCard({ topic, done, notes, stars, solutions, onTogg
     );
 }
 
-function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, onToggleStar, onUpdateNote, onUpdateSolution }) {
+function ProblemRow({ problem, isDone, isStarred, note, solution, savedTime, onToggleDone, onToggleStar, onUpdateNote, onUpdateSolution, onUpdateTime }) {
     const [isExtraOpen, setIsExtraOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('notes'); // 'notes', 'solution', 'hints', or 'playground'
+    const [timerActive, setTimerActive] = useState(false);
+    const [currentTime, setCurrentTime] = useState(savedTime || 0);
+
     const hints = getHints(problem.id);
+
+    React.useEffect(() => {
+        let interval;
+        if (timerActive) {
+            interval = setInterval(() => {
+                setCurrentTime(prev => {
+                    const next = prev + 1;
+                    if (next % 10 === 0) onUpdateTime(next); // Auto-save every 10 seconds
+                    return next;
+                });
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [timerActive]);
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
 
     const getDiffClass = (diff) => {
         if (diff === 'Easy') return 'bg-accent-green/10 text-accent-green border-accent-green/20';
@@ -160,6 +185,20 @@ function ProblemRow({ problem, isDone, isStarred, note, solution, onToggleDone, 
                 </div>
 
                 <div className="flex items-center gap-1 sm:gap-3">
+                    <div className={cn(
+                        "flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all mr-2",
+                        timerActive ? "bg-accent-red/10 border-accent-red/30 text-accent-red animate-pulse" : "bg-white/5 border-white/5 text-muted"
+                    )}>
+                        <Timer className={cn("w-3.5 h-3.5", timerActive && "fill-current")} />
+                        <span className="font-jetbrains text-[11px] font-bold w-12">{formatTime(currentTime)}</span>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setTimerActive(!timerActive); }}
+                            className="ml-1 p-1 hover:bg-white/10 rounded-md transition-colors"
+                        >
+                            {timerActive ? <Check className="w-3 h-3" /> : <Code className="w-3 h-3" />}
+                        </button>
+                    </div>
+
                     <button
                         onClick={onToggleStar}
                         className={cn("p-1.5 rounded-lg transition-colors", isStarred ? "text-accent-yellow" : "text-muted hover:bg-background")}
