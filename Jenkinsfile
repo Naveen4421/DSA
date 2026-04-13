@@ -13,6 +13,14 @@ pipeline {
             }
         }
 
+        stage('Test') {
+            steps {
+                sh 'npm install --legacy-peer-deps'
+                sh 'npm test'
+            }
+        }
+
+
         stage('Build Docker Image') {
             steps {
                 script {
