@@ -12,7 +12,7 @@ import AchievementHUD from '@/components/AchievementHUD';
 import RisingStarCertificate from '@/components/RisingStarCertificate';
 import BadgeShowcase from '@/components/BadgeShowcase';
 import useLocalStorage from '@/hooks/useLocalStorage';
-import { Search, Sparkles, Filter, LayoutGrid, List, Star as StarIcon, Trophy, Target, Briefcase } from 'lucide-react';
+import { Search, Sparkles, Filter, LayoutGrid, List, Star as StarIcon, Trophy, Target, Briefcase, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import Leaderboard from '@/components/Leaderboard';
@@ -281,6 +281,9 @@ export default function TrackerDashboard() {
 
     const filteredTopics = React.useMemo(() => {
         return activeTracks.map(topic => {
+            const isLocked = plan === 'Free' && trackType === 'companies' && topic.id !== 'google';
+            if (isLocked) return null; // Don't show detail for locked topics in the main list
+
             const filteredWeeks = topic.weeks.map(week => ({
                 ...week,
                 problems: week.problems.filter(p => (
@@ -289,8 +292,8 @@ export default function TrackerDashboard() {
                 ))
             })).filter(w => w.problems.length > 0);
             return { ...topic, weeks: filteredWeeks };
-        }).filter(t => t.weeks.length > 0 || (searchQuery === '' && filterMode === 'all'));
-    }, [searchQuery, filterMode, stars, trackType]);
+        }).filter(t => t !== null && (t.weeks.length > 0 || (searchQuery === '' && filterMode === 'all')));
+    }, [searchQuery, filterMode, stars, trackType, plan]);
 
     if (!isLoaded || !isMounted) {
         return (
@@ -395,31 +398,60 @@ export default function TrackerDashboard() {
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {COMPANY_TRACKS.map((company) => (
-                            <button
-                                key={company.id}
-                                onClick={() => {
-                                    setTrackType('companies');
-                                    setSearchQuery('');
-                                    // Smooth scroll to the topics section
-                                    document.getElementById('challenges-grid')?.scrollIntoView({ behavior: 'smooth' });
-                                }}
-                                className="glass-panel group p-6 rounded-[24px] border-white/5 hover:border-accent-blue/40 transition-all text-left relative overflow-hidden"
-                            >
-                                <div
-                                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                                    style={{ background: `radial-gradient(circle at top right, ${company.color}15, transparent)` }}
-                                />
-                                <div
-                                    className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center text-2xl shadow-inner transition-transform group-hover:scale-110 duration-500"
-                                    style={{ backgroundColor: company.bg }}
+                        {COMPANY_TRACKS.map((company) => {
+                            const isLocked = plan === 'Free' && company.id !== 'google';
+                            return (
+                                <button
+                                    key={company.id}
+                                    onClick={() => {
+                                        if (isLocked) {
+                                            setIsPricingOpen(true);
+                                            return;
+                                        }
+                                        setTrackType('companies');
+                                        setSearchQuery('');
+                                        document.getElementById('challenges-grid')?.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className={`glass-panel group p-6 rounded-[24px] border-white/5 transition-all text-left relative overflow-hidden ${isLocked ? 'cursor-not-allowed' : 'hover:border-accent-blue/40'
+                                        }`}
                                 >
-                                    {company.icon}
-                                </div>
-                                <h4 className="font-syne font-bold text-lg text-white group-hover:text-accent-blue transition-colors">{company.title}</h4>
-                                <p className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">{company.weeks[0].problems.length} Missions</p>
-                            </button>
-                        ))}
+                                    <div
+                                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                                        style={{ background: isLocked ? '' : `radial-gradient(circle at top right, ${company.color}15, transparent)` }}
+                                    />
+
+                                    {isLocked && (
+                                        <div className="absolute top-4 right-4 text-white/20 group-hover:text-accent-blue transition-colors">
+                                            <Lock className="w-4 h-4" />
+                                        </div>
+                                    )}
+
+                                    <div
+                                        className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center text-2xl shadow-inner transition-transform duration-500 ${isLocked ? 'grayscale opacity-50' : 'group-hover:scale-110'
+                                            }`}
+                                        style={{ backgroundColor: company.bg }}
+                                    >
+                                        {company.icon}
+                                    </div>
+                                    <h4 className={`font-syne font-bold text-lg transition-colors ${isLocked ? 'text-white/40' : 'text-white group-hover:text-accent-blue'
+                                        }`}>
+                                        {company.title}
+                                    </h4>
+                                    <p className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">
+                                        {isLocked ? 'Pro Access' : `${company.weeks[0].problems.length} Missions`}
+                                    </p>
+
+                                    {isLocked && (
+                                        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <div className="bg-accent-blue text-white text-[9px] font-black py-1.5 px-4 rounded-full shadow-xl flex items-center gap-2">
+                                                <Lock className="w-3 h-3" />
+                                                UNLOCK
+                                            </div>
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
                 </motion.section>
 
