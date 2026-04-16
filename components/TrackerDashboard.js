@@ -357,6 +357,52 @@ export default function TrackerDashboard() {
                     </motion.section>
                 )}
 
+                {/* Company Quick-Start Section */}
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="mb-12"
+                >
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 className="font-syne font-heavy text-2xl text-white flex items-center gap-3">
+                                <Briefcase className="w-6 h-6 text-accent-blue" />
+                                Elite Company Tracks
+                            </h3>
+                            <p className="text-muted text-sm mt-1">Direct path to top-tier product companies</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {COMPANY_TRACKS.map((company) => (
+                            <button
+                                key={company.id}
+                                onClick={() => {
+                                    setTrackType('companies');
+                                    setSearchQuery('');
+                                    // Smooth scroll to the topics section
+                                    document.getElementById('challenges-grid')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className="glass-panel group p-6 rounded-[24px] border-white/5 hover:border-accent-blue/40 transition-all text-left relative overflow-hidden"
+                            >
+                                <div
+                                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                                    style={{ background: `radial-gradient(circle at top right, ${company.color}15, transparent)` }}
+                                />
+                                <div
+                                    className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center text-2xl shadow-inner transition-transform group-hover:scale-110 duration-500"
+                                    style={{ backgroundColor: company.bg }}
+                                >
+                                    {company.icon}
+                                </div>
+                                <h4 className="font-syne font-bold text-lg text-white group-hover:text-accent-blue transition-colors">{company.title}</h4>
+                                <p className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">{company.weeks[0].problems.length} Missions</p>
+                            </button>
+                        ))}
+                    </div>
+                </motion.section>
+
                 {/* Achievements Section */}
                 <AchievementHUD
                     doneData={done}
@@ -443,7 +489,7 @@ export default function TrackerDashboard() {
                 </section>
 
                 {/* Topics Content */}
-                <div className="w-full">
+                <div id="challenges-grid" className="w-full">
                     <AnimatePresence mode='popLayout'>
                         {viewMode === 'table' ? (
                             <motion.div
