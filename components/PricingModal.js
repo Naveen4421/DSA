@@ -98,9 +98,21 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentPlan =
                             <h2 className="text-4xl md:text-5xl font-syne font-black text-white tracking-tighter mb-4">
                                 Choose Your <span className="text-accent-blue">Astra Level</span>
                             </h2>
-                            <p className="text-muted text-lg max-w-2xl mx-auto">
+                            <p className="text-muted text-lg max-w-2xl mx-auto mb-8">
                                 Accelerate your journey to the world's most prestigious product companies with advanced tools and elite curriculum.
                             </p>
+
+                            {/* Company Preview Section */}
+                            <div className="flex flex-wrap justify-center gap-3 opacity-60 hover:opacity-100 transition-opacity">
+                                {['Google', 'Amazon', 'Microsoft', 'Meta', 'Apple', 'Netflix', 'Uber', 'Airbnb', 'LinkedIn', 'Salesforce', 'Twitter', 'Spotify'].map((c) => (
+                                    <div key={c} className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/50 uppercase tracking-widest">
+                                        {c}
+                                    </div>
+                                ))}
+                                <div className="px-3 py-1.5 rounded-xl bg-accent-blue/10 border border-accent-blue/20 text-[10px] font-bold text-accent-blue uppercase tracking-widest">
+                                    + Astra Special Ops
+                                </div>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -111,8 +123,8 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentPlan =
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: i * 0.1 }}
                                     className={`relative flex flex-col p-8 rounded-[32px] border transition-all duration-500 ${plan.highlight
-                                            ? 'bg-accent-blue/[0.03] border-accent-blue/30 shadow-2xl shadow-accent-blue/10 scale-105 z-10'
-                                            : 'bg-white/[0.01] border-white/5 hover:border-white/10'
+                                        ? 'bg-accent-blue/[0.03] border-accent-blue/30 shadow-2xl shadow-accent-blue/10 scale-105 z-10'
+                                        : 'bg-white/[0.01] border-white/5 hover:border-white/10'
                                         }`}
                                 >
                                     {plan.highlight && (
@@ -146,10 +158,10 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentPlan =
                                         onClick={() => plan.name !== currentPlan && onUpgrade(plan.name)}
                                         disabled={plan.name === currentPlan}
                                         className={`w-full py-4 rounded-2xl font-syne font-bold text-xs uppercase tracking-widest transition-all active:scale-95 ${plan.name === currentPlan
-                                                ? 'bg-white/5 text-muted cursor-default border border-white/5'
-                                                : plan.highlight
-                                                    ? 'bg-accent-blue text-white shadow-xl shadow-accent-blue/20 hover:bg-accent-blue/80'
-                                                    : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
+                                            ? 'bg-white/5 text-muted cursor-default border border-white/5'
+                                            : plan.highlight
+                                                ? 'bg-accent-blue text-white shadow-xl shadow-accent-blue/20 hover:bg-accent-blue/80'
+                                                : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
                                             }`}
                                     >
                                         {plan.button}

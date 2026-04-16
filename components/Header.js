@@ -32,6 +32,7 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
 
     const navLinks = [
         { name: "Explore", icon: LayoutGrid, href: "/" },
+        { name: "Elite Tracks", icon: Briefcase, href: "#", isElite: true },
         { name: "Contests", icon: Swords, href: "/", badge: "Patterns" },
         { name: "Astra Log", icon: BarChart3, href: "/profile" },
         { name: "Badges", icon: Trophy, href: "/profile" }
@@ -71,6 +72,15 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                                         {link.name}
                                     </motion.div>
                                 </Link>
+                            ) : link.isElite ? (
+                                <motion.div
+                                    whileHover={{ y: -2 }}
+                                    onClick={onOpenPricing}
+                                    className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-white/5 transition-all cursor-pointer flex items-center gap-2 relative group"
+                                >
+                                    <link.icon className="w-3.5 h-3.5 text-accent-blue" />
+                                    {link.name}
+                                </motion.div>
                             ) : link.name === "Badges" ? (
                                 <motion.div
                                     whileHover={{ y: -2 }}
