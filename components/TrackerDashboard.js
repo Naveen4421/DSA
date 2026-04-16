@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import { TOPICS } from '@/lib/data';
+import { TOPICS, COMPANY_TRACKS } from '@/lib/data';
 import Header from '@/components/Header';
 import TopicCard from '@/components/TopicCard';
 import AllProblemsTable from '@/components/AllProblemsTable';
@@ -12,7 +12,7 @@ import AchievementHUD from '@/components/AchievementHUD';
 import RisingStarCertificate from '@/components/RisingStarCertificate';
 import BadgeShowcase from '@/components/BadgeShowcase';
 import useLocalStorage from '@/hooks/useLocalStorage';
-import { Search, Sparkles, Filter, LayoutGrid, List, Star as StarIcon, Trophy, Target } from 'lucide-react';
+import { Search, Sparkles, Filter, LayoutGrid, List, Star as StarIcon, Trophy, Target, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import Leaderboard from '@/components/Leaderboard';
@@ -38,6 +38,7 @@ export default function TrackerDashboard() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterMode, setFilterMode] = useState('all');
     const [viewMode, setViewMode] = useState('list');
+    const [trackType, setTrackType] = useState('topics'); // 'topics' or 'companies'
 
     // Unified Load State
     useEffect(() => {
@@ -255,10 +256,13 @@ export default function TrackerDashboard() {
     };
 
     const solvedCount = Object.keys(done || {}).length;
-    const totalCount = TOPICS.reduce((acc, t) => acc + (t.weeks?.reduce((a, w) => a + (w.problems?.length || 0), 0) || 0), 0);
+    const allAvailableTracks = [...TOPICS, ...COMPANY_TRACKS];
+    const totalCount = allAvailableTracks.reduce((acc, t) => acc + (t.weeks?.reduce((a, w) => a + (w.problems?.length || 0), 0) || 0), 0);
+
+    const activeTracks = trackType === 'topics' ? TOPICS : COMPANY_TRACKS;
 
     const filteredTopics = React.useMemo(() => {
-        return TOPICS.map(topic => {
+        return activeTracks.map(topic => {
             const filteredWeeks = topic.weeks.map(week => ({
                 ...week,
                 problems: week.problems.filter(p => (
@@ -268,7 +272,7 @@ export default function TrackerDashboard() {
             })).filter(w => w.problems.length > 0);
             return { ...topic, weeks: filteredWeeks };
         }).filter(t => t.weeks.length > 0 || (searchQuery === '' && filterMode === 'all'));
-    }, [searchQuery, filterMode, stars]);
+    }, [searchQuery, filterMode, stars, trackType]);
 
     if (!isLoaded || !isMounted) {
         return (
@@ -356,7 +360,7 @@ export default function TrackerDashboard() {
                 {/* Achievements Section */}
                 <AchievementHUD
                     doneData={done}
-                    topics={TOPICS}
+                    topics={allAvailableTracks}
                     onViewCertificate={() => setIsCertificateOpen(true)}
                 />
 
@@ -365,6 +369,7 @@ export default function TrackerDashboard() {
                     done={done}
                     totalCount={totalCount}
                     theme={theme}
+                    topics={allAvailableTracks}
                     onViewCertificates={() => setIsCertificateOpen(true)}
                 />
 
@@ -375,7 +380,24 @@ export default function TrackerDashboard() {
                 <section className="sticky top-24 z-40 mb-12 py-4">
                     <div className="glass-panel rounded-3xl p-3 flex flex-col md:flex-row items-center justify-between gap-4 border-white/5 shadow-2xl">
 
-                        <div className="relative w-full md:w-96 group">
+                        <div className="flex items-center gap-2 bg-background/50 p-1 rounded-2xl border border-border/50">
+                            <button
+                                onClick={() => setTrackType('topics')}
+                                className={`px-6 py-2.5 rounded-xl transition-all font-syne font-bold text-xs uppercase tracking-wider flex items-center gap-2 ${trackType === 'topics' ? 'bg-accent-blue text-white shadow-lg' : 'text-muted hover:text-white'}`}
+                            >
+                                <LayoutGrid className="w-4 h-4" />
+                                Topics
+                            </button>
+                            <button
+                                onClick={() => setTrackType('companies')}
+                                className={`px-6 py-2.5 rounded-xl transition-all font-syne font-bold text-xs uppercase tracking-wider flex items-center gap-2 ${trackType === 'companies' ? 'bg-accent-blue text-white shadow-lg' : 'text-muted hover:text-white'}`}
+                            >
+                                <Briefcase className="w-4 h-4" />
+                                Companies
+                            </button>
+                        </div>
+
+                        <div className="relative w-full md:w-64 group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-accent-blue transition-colors" />
                             <input
                                 type="text"

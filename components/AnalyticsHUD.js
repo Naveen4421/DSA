@@ -7,13 +7,15 @@ import { TOPICS } from '@/lib/data';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-export default function AnalyticsHUD({ done, totalCount, theme, onViewCertificates }) {
+export default function AnalyticsHUD({ done, totalCount, theme, topics: externalTopics, onViewCertificates }) {
     const { solvedCount, progress, difficultyStats, solvedToday, solvedThisWeek, solvedDp, topicStats } = React.useMemo(() => {
         const safeDone = done || {};
         const solvedCount = Object.keys(safeDone).length;
         const progress = totalCount > 0 ? Math.round((solvedCount / totalCount) * 100) : 0;
 
-        const allProblems = TOPICS.flatMap(t => t.weeks.flatMap(w => w.problems));
+        const topics = externalTopics || TOPICS;
+
+        const allProblems = topics.flatMap(t => t.weeks.flatMap(w => w.problems));
         const difficultyStats = { Easy: 0, Medium: 0, Hard: 0 };
 
         Object.keys(safeDone).forEach(pid => {
@@ -34,11 +36,11 @@ export default function AnalyticsHUD({ done, totalCount, theme, onViewCertificat
             new Date(timestamp) >= startOfWeek
         ).length;
 
-        const dpTopic = TOPICS.find(t => t.id === 'dp');
+        const dpTopic = topics.find(t => t.id === 'dp');
         const dpProblems = dpTopic ? dpTopic.weeks.flatMap(w => w.problems) : [];
         const solvedDp = dpProblems.filter(p => safeDone[p.id]).length;
 
-        const topicStats = TOPICS.map(t => {
+        const topicStats = topics.map(t => {
             const allTopicProblems = t.weeks.flatMap(w => w.problems);
             const solved = allTopicProblems.filter(p => safeDone[p.id]).length;
             return {
@@ -48,7 +50,7 @@ export default function AnalyticsHUD({ done, totalCount, theme, onViewCertificat
         }).sort((a, b) => b.percent - a.percent);
 
         return { solvedCount, progress, difficultyStats, solvedToday, solvedThisWeek, solvedDp, topicStats };
-    }, [done, totalCount]);
+    }, [done, totalCount, externalTopics]);
 
     const chartSeries = [difficultyStats.Easy, difficultyStats.Medium, difficultyStats.Hard];
     const weeklyTarget = 15;
