@@ -9,11 +9,12 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Header({ user, solvedCount, totalCount, streak, onLogout, onToggleTheme, theme, onOpenBadges, onShowExplore }) {
+export default function Header({ user, solvedCount, totalCount, streak, onLogout, onToggleTheme, theme, onOpenBadges, onShowExplore, plan = 'Free', onOpenPricing }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const menuRef = useRef(null);
     const progress = totalCount > 0 ? Math.round((solvedCount / totalCount) * 100) : 0;
+    const isPro = plan !== 'Free';
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -97,6 +98,18 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                             )}
                         </div>
                     ))}
+
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={onOpenPricing}
+                        className={`ml-4 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${isPro
+                            ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20'
+                            : 'bg-accent-blue/10 border-accent-blue/20 text-accent-blue hover:bg-accent-blue hover:text-white'
+                            }`}
+                    >
+                        {isPro ? '★ Elite Member' : '⚡ Upgrade to Pro'}
+                    </motion.button>
                 </nav>
 
                 <div className="hidden md:flex flex-1 max-w-md relative group">
@@ -161,7 +174,10 @@ export default function Header({ user, solvedCount, totalCount, streak, onLogout
                                             <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
                                                 <button className="w-full flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all group">
                                                     <div className="w-8 h-8 rounded-lg bg-accent-blue/10 flex items-center justify-center border border-accent-blue/20"><User className="w-4 h-4 text-accent-blue" /></div>
-                                                    <div className="text-left"><p className="text-xs font-bold text-white group-hover:text-accent-blue transition-colors">View Profile</p><span className="text-[9px] text-muted">Astra Commander</span></div>
+                                                    <div className="text-left">
+                                                        <p className="text-xs font-bold text-white group-hover:text-accent-blue transition-colors">View Profile</p>
+                                                        <span className="text-[9px] text-muted">{plan === 'Free' ? 'Astra Aspirant' : plan}</span>
+                                                    </div>
                                                 </button>
                                             </Link>
                                             <button onClick={() => setIsMenuOpen(false)} className="w-full flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all group">

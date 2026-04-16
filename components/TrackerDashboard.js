@@ -16,6 +16,7 @@ import { Search, Sparkles, Filter, LayoutGrid, List, Star as StarIcon, Trophy, T
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import Leaderboard from '@/components/Leaderboard';
+import PricingModal from '@/components/PricingModal';
 
 export default function TrackerDashboard() {
     const [user, setUser] = useState(null);
@@ -34,6 +35,8 @@ export default function TrackerDashboard() {
     const [dailyProblem, setDailyProblem] = useState(null);
     const [leaderboardData, setLeaderboardData] = useState([]);
     const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+    const [plan, setPlan] = useLocalStorage('dsa_plan', 'Free');
+    const [isPricingOpen, setIsPricingOpen] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filterMode, setFilterMode] = useState('all');
@@ -153,7 +156,22 @@ export default function TrackerDashboard() {
         if (type === 'stars') updates.stars_data = newData;
         if (type === 'solutions') updates.solutions_data = newData;
         if (type === 'times') updates.times_data = newData;
+        if (type === 'plan') updates.plan = newData;
         await supabase.from('user_data').upsert(updates);
+    };
+
+    const handleUpgrade = (newPlan) => {
+        setPlan(newPlan);
+        syncToCloud(newPlan, 'plan');
+        setIsPricingOpen(false);
+        if (newPlan !== 'Free') {
+            confetti({
+                particleCount: 200,
+                spread: 100,
+                origin: { y: 0.6 },
+                colors: ['#00A1E0', '#FFD700', '#FFFFFF']
+            });
+        }
     };
 
     const updateTime = (pid, val) => {
@@ -302,6 +320,8 @@ export default function TrackerDashboard() {
                 onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 onOpenBadges={() => setIsBadgeShowcaseOpen(true)}
                 onShowExplore={() => setViewMode('list')}
+                plan={plan}
+                onOpenPricing={() => setIsPricingOpen(true)}
             />
 
             <main className="max-w-6xl mx-auto px-4 mt-12">
@@ -569,6 +589,13 @@ export default function TrackerDashboard() {
                 isOpen={isLeaderboardOpen}
                 onClose={() => setIsLeaderboardOpen(false)}
                 data={leaderboardData}
+            />
+
+            <PricingModal
+                isOpen={isPricingOpen}
+                onClose={() => setIsPricingOpen(false)}
+                onUpgrade={handleUpgrade}
+                currentPlan={plan}
             />
 
             {/* Floating Decorative Elements */}
