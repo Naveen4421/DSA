@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Zap, Rocket, Shield, Crown, X, Star } from 'lucide-react';
+import { Check, Zap, Rocket, Shield, Crown, X, Star, Globe } from 'lucide-react';
 
 export default function PricingModal({ isOpen, onClose, onUpgrade, currentPlan = 'Free' }) {
     const plans = [
@@ -99,7 +99,7 @@ export default function PricingModal({ isOpen, onClose, onUpgrade, currentPlan =
                                 Choose Your <span className="text-accent-blue">Astra Level</span>
                             </h2>
                             <p className="text-muted text-lg max-w-2xl mx-auto mb-8">
-                                Accelerate your journey to the world's most prestigious product companies with advanced tools and elite curriculum.
+                                Accelerate your journey to the world&apos;s most prestigious product companies with advanced tools and elite curriculum.
                             </p>
 
                             {/* Company Preview Section */}

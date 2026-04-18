@@ -89,7 +89,7 @@ export default function LoginOverlay({ onLogin, isCloudEnabled, error }) {
                     </button>
                 </form>
 
-                <p className="mt-8 text-center text-sm text-muted font-medium">
+                <div className="mt-8 text-center text-sm text-muted font-medium">
                     {isSignUp ? 'Already on a journey?' : "New to the path?"}{' '}
                     <button
                         type="button"
@@ -107,7 +107,7 @@ export default function LoginOverlay({ onLogin, isCloudEnabled, error }) {
                             Or proceed in Guest Mode (Offline)
                         </button>
                     </div>
-                </p>
+                </div>
 
                 {!isCloudEnabled && (
                     <div className="mt-6 flex items-center justify-center gap-2 text-[10px] font-bold text-accent-yellow uppercase tracking-widest bg-accent-yellow/5 border border-accent-yellow/10 py-2 rounded-xl">

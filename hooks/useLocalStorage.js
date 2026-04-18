@@ -7,12 +7,15 @@ export default function useLocalStorage(key, initialValue) {
 
     useEffect(() => {
         try {
-            const item = window.localStorage.getItem(key);
+            const item = typeof window !== "undefined" ? window.localStorage.getItem(key) : null;
             if (item) {
-                setStoredValue(JSON.parse(item));
+                const parsed = JSON.parse(item);
+                if (parsed !== undefined) {
+                    setStoredValue(parsed);
+                }
             }
         } catch (error) {
-            console.log(error);
+            console.error("Error reading localStorage key “" + key + "”:", error);
         }
         setIsLoaded(true);
     }, [key]);

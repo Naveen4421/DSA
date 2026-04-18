@@ -1,16 +1,26 @@
-import TrackerDashboard from '@/components/TrackerDashboard';
 
-export const metadata = {
-  title: "Dashboard | DSA Mastery Tracker",
-  description: "Track your progress on top DSA problems.",
-};
+"use client";
+import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import ErrorBoundary from '@/components/ErrorBoundary';
+
+// Use dynamic import with ssr: false to prevent hydration mismatches
+const TrackerDashboard = dynamic(() => import('@/components/TrackerDashboard'), {
+  ssr: false,
+  loading: () => (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#08090B]">
+      <div className="w-12 h-12 border-4 border-accent-blue/20 border-t-accent-blue rounded-full animate-spin mb-4" />
+      <p className="text-muted text-xs font-bold uppercase tracking-widest animate-pulse">Initializing Astra Systems...</p>
+    </div>
+  )
+});
 
 export default function Page() {
-  // This is a Server Component
-  // In a more complex app, we could fetch static data or check auth cookies here
   return (
     <main>
-      <TrackerDashboard />
+      <ErrorBoundary>
+        <TrackerDashboard />
+      </ErrorBoundary>
     </main>
   );
 }

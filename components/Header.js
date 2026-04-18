@@ -5,7 +5,7 @@ import {
     Brain, LogOut, Moon, Sun, Flame, User, Bell,
     Share2, Settings, ExternalLink, ChevronDown,
     Search, LayoutGrid, Terminal, BarChart3, Trophy,
-    Swords, Target
+    Swords, Target, Briefcase
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 

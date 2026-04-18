@@ -4,15 +4,16 @@ import { motion } from 'framer-motion';
 import { CheckCircle2, Circle, Star, ExternalLink, Code2, Lock, Youtube, PlayCircle } from 'lucide-react';
 
 export default function AllProblemsTable({ topics, done, stars, onToggleDone, onToggleStar }) {
-    const allProblems = topics.flatMap(t =>
-        t.weeks.flatMap(w =>
-            w.problems.map(p => ({
+    const allProblems = topics?.flatMap(t =>
+        t.weeks?.flatMap(w =>
+            w.problems?.map(p => ({
                 ...p,
+                topicId: t.id,
                 topicName: t.title,
-                acceptance: (Math.random() * (75 - 45) + 45).toFixed(1) + "%", // Mock acceptance
-            }))
-        )
-    );
+                acceptance: (Math.abs(Math.sin(p.id)) * (75 - 45) + 45).toFixed(1) + "%", // Deterministic mock acceptance
+            })) || []
+        ) || []
+    ) || [];
 
     const getDiffColor = (diff) => {
         switch (diff.toLowerCase()) {
@@ -86,7 +87,7 @@ export default function AllProblemsTable({ topics, done, stars, onToggleDone, on
                                         <div className="h-1.5 w-16 bg-border/40 rounded-full overflow-hidden">
                                             <div
                                                 className="h-full bg-accent-blue/40"
-                                                style={{ width: `${Math.random() * 80 + 20}%` }}
+                                                style={{ width: `${Math.abs(Math.cos(p.id)) * 80 + 20}%` }}
                                             />
                                         </div>
                                         <Lock className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 text-muted opacity-0 group-hover/freq:opacity-100 transition-opacity" />
