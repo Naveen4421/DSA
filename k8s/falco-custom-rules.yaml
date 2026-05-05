@@ -1,0 +1,37 @@
+customRules:
+  falco_rules.local.yaml: |-
+    # custom rules for DSA Tracker application
+    
+    - macro: dsa_tracker_containers
+      condition: k8s.pod.labels.app = "dsa-tracker"
+
+    - rule: Terminal shell in DSA Tracker container
+      desc: A shell was spawned within the DSA Tracker container. This could indicate an attacker exploring the container.
+      condition: >
+        spawned_process and container
+        and shell_procs and dsa_tracker_containers
+      output: >
+        A shell was spawned in the DSA Tracker container (user=%user.name user_loginuid=%user.loginuid %container.info
+        shell=%proc.name parent=%proc.pname cmdline=%proc.cmdline)
+      priority: WARNING
+      tags: [container, shell, mitre_execution]
+
+    - rule: Write below root for DSA Tracker
+      desc: An attempt to write to any file directly below / or /root in the DSA Tracker container
+      condition: >
+        open_write and container and dsa_tracker_containers
+        and (fd.name startswith /root/ or fd.dirname = /)
+      output: >
+        File created below / or /root by DSA tracker container (user=%user.name user_loginuid=%user.loginuid command=%proc.cmdline file=%fd.name container_id=%container.id image=%container.image.repository)
+      priority: WARNING
+      tags: [container, filesystem, mitre_persistence]
+
+    - rule: Unexpected process spawned in DSA Tracker
+      desc: A process other than node/npm was spawned in the DSA Tracker container
+      condition: >
+        spawned_process and container and dsa_tracker_containers
+        and not proc.name in (node, npm, sh, bash)
+      output: >
+        Unexpected process spawned in DSA tracker container (user=%user.name command=%proc.cmdline process=%proc.name container_id=%container.id image=%container.image.repository)
+      priority: NOTICE
+      tags: [container, process, mitre_execution]
